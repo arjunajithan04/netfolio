@@ -421,7 +421,7 @@ export default function AdminApp() {
         animate="visible"
         aria-label="Netfolio administrator sign in"
       >
-        <motion.div className="admin-login-monogram" aria-label="Arjun Ajithan" variants={loginItemVariants(prefersReducedMotion)}><img src="/logo.svg" alt="" style={{ width: '100%', height: '100%' }} /></motion.div>
+        <motion.img className="admin-login-monogram" src="/logo.svg" alt="Arjun Ajithan" variants={loginItemVariants(prefersReducedMotion)} />
         <motion.h1 className="admin-login-title" variants={loginTitleVariants(prefersReducedMotion)}><span>WELCOME</span><em>BACK.</em></motion.h1>
         <motion.p className="admin-login-subtitle" variants={loginItemVariants(prefersReducedMotion)}>SIGN IN TO YOUR PRIVATE WORKSPACE.</motion.p>
         <motion.label className="admin-login-label" variants={loginItemVariants(prefersReducedMotion)}><span>Email</span><span className="admin-login-input-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><input type="email" autoComplete="username" required value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="Enter your email"/></span></motion.label>
@@ -483,5 +483,5 @@ export default function AdminApp() {
 }
 
 function Brand() {
-  return <a href="/" className="admin-brand" aria-label="Return to Arjun Ajithan portfolio"><span className="admin-brand-mark"><img src="/logo.svg" alt="" style={{ width: '100%', height: '100%' }} /></span><span><strong>ARJUN AJITHAN</strong><small>NETFOLIO / PRIVATE CMS</small></span></a>;
+  return <a href="/" className="admin-brand" aria-label="Return to Arjun Ajithan portfolio"><img className="admin-brand-mark" src="/logo.svg" alt="" /><span><strong>ARJUN AJITHAN</strong><small>NETFOLIO / PRIVATE CMS</small></span></a>;
 }
