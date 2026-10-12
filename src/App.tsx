@@ -18,6 +18,8 @@ import Achievements from './components/Achievements';
 import ResumeSection from './components/ResumeViewer';
 import FinalCTA from './components/FinalCTA';
 import { EASE } from './components/fx';
+import { syncPublishedContent } from './lib/contentAdapter';
+const AdminApp = lazy(() => import('./components/AdminApp'));
 
 // Overlays are only needed on demand — split them out of the first load.
 const PlayIntro = lazy(() => import('./components/PlayIntro'));
@@ -38,6 +40,7 @@ function readStoredProfile(): ProfileId | null {
 }
 
 export default function App() {
+  if (window.location.pathname.startsWith('/admin')) return <Suspense fallback={<div className="admin-loading-mark"><span className="admin-pulse"/> LOADING CONTROL ROOM</div>}><AdminApp /></Suspense>;
   return (
     <SmoothScrollProvider>
       <Series />
@@ -53,7 +56,23 @@ function Series() {
   const [project, setProject] = useState<Project | null>(null);
   const [resumeOpen, setResumeOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [, setContentRevision] = useState(0);
   const { scrollTo, lock, unlock } = useSmoothScroll();
+
+  useEffect(() => {
+    let active = true;
+    const refreshPublishedContent = async () => {
+      await syncPublishedContent();
+      if (active) setContentRevision((revision) => revision + 1);
+    };
+    void refreshPublishedContent();
+    // When an admin publishes in another tab, the public page can pick it up on focus.
+    window.addEventListener('focus', refreshPublishedContent);
+    return () => {
+      active = false;
+      window.removeEventListener('focus', refreshPublishedContent);
+    };
+  }, []);
 
   const order = viewerProfiles.find((p) => p.id === profileId)!.order;
 

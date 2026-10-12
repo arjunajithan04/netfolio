@@ -55,7 +55,7 @@ export const experience = [
 ];
 
 export type Metric = { value: string; label: string };
-export type Project = { id: string; title: string; year: string; genre: string; logline: string; stack: string[]; build: string[]; features: string[]; metrics: Metric[]; github?: string; palette: Palette; motif: 'shield' | 'flow' | 'tenants' };
+export type Project = { id: string; title: string; year: string; genre: string; logline: string; stack: string[]; build: string[]; features: string[]; metrics: Metric[]; github?: string; image?: string; palette: Palette; motif: 'shield' | 'flow' | 'tenants' };
 export const projects: Project[] = [
   {
     id: 'repopulse', title: 'RepoPulse', year: '2026', genre: 'Developer Tools • GitHub • Productivity',

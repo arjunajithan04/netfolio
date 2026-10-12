@@ -38,7 +38,7 @@ export function ProjectArt({
   return (
     <div className={`absolute inset-0 overflow-hidden bg-ink ${className}`}>
       <img
-        src={`/assets/project-art/${project.id}-${suffix}.webp`}
+        src={project.image || `/assets/project-art/${project.id}-${suffix}.webp`}
         alt=""
         aria-hidden="true"
         loading="lazy"
