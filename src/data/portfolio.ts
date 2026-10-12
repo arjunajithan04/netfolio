@@ -58,7 +58,7 @@ export type Metric = { value: string; label: string };
 export type Project = { id: string; title: string; year: string; genre: string; logline: string; stack: string[]; build: string[]; features: string[]; metrics: Metric[]; github?: string; palette: Palette; motif: 'shield' | 'flow' | 'tenants' };
 export const projects: Project[] = [
   {
-    id: 'repopulse', title: 'RepoPulse', year: 'Developing', genre: 'Developer Tools • GitHub • Productivity',
+    id: 'repopulse', title: 'RepoPulse', year: '2026', genre: 'Developer Tools • GitHub • Productivity',
     logline: 'A repository-first workspace built to make project review and development workflows feel more focused.',
     stack: ['React', 'TypeScript', 'Vite', 'GitHub'],
     build: ['Designing a focused workspace around repository context and project review.', 'Refining responsive layouts, interaction states, and a dark cinematic visual system while preserving existing project workflows.'],

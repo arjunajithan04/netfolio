@@ -1,65 +1,64 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { certifications } from '../data/portfolio';
-import { EASE, SectionHeading } from './fx';
+import { achievements, certifications } from '../data/portfolio';
+import { EASE, SectionHeading, Tilt } from './fx';
+
+function Laurel({ side }: { side: 'l' | 'r' }) {
+  return (
+    <svg viewBox="0 0 30 64" className={`h-14 w-auto text-[#d9b46a] ${side === 'r' ? '-scale-x-100' : ''}`} aria-hidden>
+      <path d="M26 62C10 52 4 36 8 4" fill="none" stroke="currentColor" strokeWidth="1.4" />
+      {[10, 18, 26, 34, 42, 50].map((y, i) => (
+        <ellipse key={y} cx={i < 2 ? 9 : 8 + i * 1.6} cy={y} rx="5" ry="2.2" fill="currentColor" opacity="0.85" transform={`rotate(-40 ${8 + i * 1.6} ${y})`} />
+      ))}
+    </svg>
+  );
+}
 
 export default function Achievements() {
   const [selectedCertificate, setSelectedCertificate] = useState<(typeof certifications)[number] | null>(null);
 
   return (
     <>
-      <SectionHeading
-        kicker="An original story"
-        title="Milestones & Highlights"
-        aside={<p className="max-w-xs text-sm text-mist">Different chapters. A growing perspective. Still being written.</p>}
-      />
+      <SectionHeading kicker="Awards season" title="Top Moments" />
 
-      <div className="gutter relative mt-2">
-        <div aria-hidden className="absolute bottom-10 left-[29px] top-8 w-px bg-gradient-to-b from-crimson via-crimson/45 to-transparent sm:left-[39px]" />
-        <div className="space-y-5 sm:space-y-7">
-          {[
-            { number: '01', label: 'THE FOUNDATION', period: '2022–2025', title: 'The Christ University Chapter', detail: 'Completing a Bachelor of Computer Applications and building the academic foundation for the next stage in computer science.', image: '/assets/milestones/01-christ-campus.webp', imagePosition: 'center 52%', tags: ['BCA', 'Christ University'] },
-            { number: '02', label: 'COMMUNITY & COLLABORATION', period: 'AUG 2022 – APR 2023', title: 'Building Beyond the Classroom', detail: 'Serving as a Core Team Member of Google Developer Student Clubs at Christ University — a chapter centred on community and collaboration.', image: '/assets/milestones/02-community-collaboration.webp', imagePosition: 'center 52%', tags: ['Google Developer Student Clubs', 'Christ University'] },
-            { number: '03', label: 'THE NEXT CHAPTER', period: 'CURRENTLY PURSUING', title: 'The MCA Journey', detail: 'Continuing the journey through a Master of Computer Applications at Presidency College, Bengaluru, while deepening knowledge across computer science.', image: '/assets/milestones/03-mca-journey.webp', imagePosition: 'center 52%', tags: ['MCA', 'Presidency College'] },
-            { number: '04', label: 'PROFESSIONAL GROWTH', period: 'CURRENT CHAPTER', title: 'Stepping Into Industry', detail: 'Learning through hands-on work as an AI with Python Intern at Hope Foundation, Bengaluru.', image: '/assets/milestones/04-industry-internship.webp', imagePosition: 'center 52%', tags: ['AI with Python', 'Hope Foundation · Bengaluru'] },
-            { number: '05', label: 'BEYOND THE CAREER', period: 'THE PERSONAL SIDE', title: 'More Than the Work', detail: 'FC Barcelona at heart, and a love for football beyond one club. A reminder that the story is about the person behind the code, too.', image: '/assets/milestones/05-football-beyond-work.webp', imagePosition: 'center 52%', tags: ['FC Barcelona', 'Football'] },
-          ].map((moment, i) => (
-            <motion.article key={moment.number}
-              initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-8% 0px' }}
-              transition={{ duration: 0.65, delay: i * 0.04, ease: EASE }}
-              className="group relative grid gap-0 overflow-hidden rounded-2xl border border-white/[0.09] bg-[#0c0c0f] transition-colors duration-500 hover:border-crimson-2/35 md:grid-cols-[minmax(220px,0.82fr)_1.18fr]">
-              <div className="absolute left-[22px] top-7 z-10 flex h-4 w-4 items-center justify-center rounded-full border border-crimson-2 bg-[#0c0c0f] shadow-[0_0_18px_rgba(229,19,43,0.28)] sm:left-[32px] md:left-[calc(50%-8px)] md:top-8">
-                <span className="h-1.5 w-1.5 rounded-full bg-crimson-2" />
-              </div>
-              <div className="relative min-h-[190px] overflow-hidden sm:min-h-[230px] md:min-h-[250px]">
-                <img src={moment.image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-65 transition duration-700 group-hover:scale-[1.04] group-hover:opacity-85" style={{ objectPosition: moment.imagePosition }} />
-                <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-black/25 via-black/10 to-[#0c0c0f] md:bg-gradient-to-r md:from-transparent md:via-black/10 md:to-[#0c0c0f]" />
-                <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0c0c0f] via-transparent to-black/10 md:bg-gradient-to-t md:from-[#0c0c0f]/45 md:via-transparent md:to-transparent" />
-                <div className="absolute bottom-4 left-12 sm:left-16 md:bottom-5 md:left-6">
-                  <p className="font-display text-5xl leading-none text-white/90 drop-shadow-lg sm:text-6xl">{moment.number}</p>
-                  <p className="mt-2 text-[9px] font-bold uppercase tracking-[0.22em] text-crimson-2">{moment.label}</p>
+      <div className="gutter grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 [perspective:1400px]">
+        {achievements.map((a, i) => (
+          <motion.div
+            key={a.id}
+            initial={{ opacity: 0, y: 50, rotateX: 18 }}
+            whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+            viewport={{ once: true, margin: '-8% 0px' }}
+            transition={{ duration: 0.9, delay: i * 0.08, ease: EASE }}
+          >
+            <Tilt max={8} className="group h-full rounded-2xl">
+              <article className="relative flex h-full min-h-[340px] flex-col items-center overflow-hidden rounded-2xl bg-[radial-gradient(120%_80%_at_50%_0%,#2a1f10,#0d0b08_60%,#07070a)] px-5 pb-6 pt-8 text-center ring-1 ring-[#d9b46a]/20 transition duration-500 group-hover:ring-[#d9b46a]/60">
+                <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d9b46a]/70 to-transparent" />
+                <div aria-hidden className="absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-[#d9b46a]/10 blur-3xl transition duration-700 group-hover:bg-[#d9b46a]/25" />
+                <div className="relative flex items-center gap-1">
+                  <Laurel side="l" />
+                  <div className="px-1">
+                    <p className="text-[9px] font-bold uppercase leading-tight tracking-[0.24em] text-[#d9b46a]">{a.laurel}</p>
+                  </div>
+                  <Laurel side="r" />
                 </div>
-              </div>
-              <div className="relative flex flex-col justify-center px-5 pb-6 pl-12 pt-5 sm:px-7 sm:pl-16 md:py-8 md:pl-8 md:pr-9">
-                <div className="flex flex-wrap items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.19em] text-smoke">
-                  <span className="h-px w-5 bg-crimson-2" />{moment.period}
-                </div>
-                <h3 className="mt-3 max-w-xl font-display text-3xl leading-[0.98] tracking-wide text-bone sm:text-4xl">{moment.title}</h3>
-                <p className="mt-4 max-w-xl text-sm leading-relaxed text-mist sm:text-[15px]">{moment.detail}</p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {moment.tags.map((tag) => <span key={tag} className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-bone/65">{tag}</span>)}
-                </div>
-              </div>
-            </motion.article>
-          ))}
-        </div>
-        <div className="mt-8 flex items-center gap-3 pl-12 sm:pl-16">
-          <span className="h-px w-7 bg-crimson" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-crimson-2">Next episode</span>
-          <span className="h-px flex-1 bg-gradient-to-r from-crimson/40 via-white/10 to-transparent" />
-          <span className="text-[9px] uppercase tracking-[0.2em] text-smoke">To be continued</span>
-        </div>
+                <h3 className="relative mt-6 font-display text-[2.1rem] leading-[0.92] tracking-wide text-bone">{a.title}</h3>
+                <p className="relative mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#d9b46a]">{a.org}</p>
+                <p className="relative mt-4 text-[13px] leading-relaxed text-bone/70">{a.detail}</p>
+                {a.link && (
+                  <a
+                    href={a.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-cursor="link"
+                    className="relative mt-auto inline-flex min-h-10 items-center gap-1 pt-5 text-xs font-semibold tracking-wide text-bone underline decoration-[#d9b46a]/60 underline-offset-4 hover:decoration-[#d9b46a]"
+                  >
+                    View certificate ↗
+                  </a>
+                )}
+              </article>
+            </Tilt>
+          </motion.div>
+        ))}
       </div>
 
       {/* Credentials — editorial milestone grid */}
