@@ -1,5 +1,6 @@
+import SafeAnimatePresence from "./components/SafeAnimatePresence";
 import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
-import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
+import {LayoutGroup,motion} from "framer-motion";
 import { viewerProfiles, type ProfileId, type Project, type SectionId } from './data/portfolio';
 import { SmoothScrollProvider, useSmoothScroll } from './hooks/smoothScroll';
 import CustomCursor from './components/CustomCursor';
@@ -127,10 +128,10 @@ function Series() {
       <div className="grain" aria-hidden />
       <CustomCursor />
 
-      <AnimatePresence>
+      <SafeAnimatePresence>
         {stage === 'opening' && <OpeningSequence key="opening" onDone={() => setStage('profiles')} />}
         {stage === 'profiles' && <ProfileSelector key="profiles" onPick={pickProfile} />}
-      </AnimatePresence>
+      </SafeAnimatePresence>
 
       {stage === 'home' && (
         <motion.div initial={{ opacity: 0, scale: 1.03, filter: 'blur(10px)' }} animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} transition={{ duration: 1, ease: EASE }}>
@@ -149,12 +150,12 @@ function Series() {
       )}
 
       <Suspense fallback={null}>
-        <AnimatePresence>{playing && <PlayIntro key="intro" onClose={closeIntro} />}</AnimatePresence>
-        <AnimatePresence>{project && <ProjectModal key="project" project={project} onClose={closeProject} onSwitch={setProject} />}</AnimatePresence>
-        <AnimatePresence>{resumeOpen && <ResumeModal key="resume" onClose={closeResume} />}</AnimatePresence>
+        <SafeAnimatePresence>{playing && <PlayIntro key="intro" onClose={closeIntro} />}</SafeAnimatePresence>
+        <SafeAnimatePresence>{project && <ProjectModal key="project" project={project} onClose={closeProject} onSwitch={setProject} />}</SafeAnimatePresence>
+        <SafeAnimatePresence>{resumeOpen && <ResumeModal key="resume" onClose={closeResume} />}</SafeAnimatePresence>
       </Suspense>
 
-      <AnimatePresence>
+      <SafeAnimatePresence>
         {toast && (
           <motion.div
             role="status"
@@ -166,7 +167,7 @@ function Series() {
             {toast}
           </motion.div>
         )}
-      </AnimatePresence>
+      </SafeAnimatePresence>
     </LayoutGroup>
   );
 }

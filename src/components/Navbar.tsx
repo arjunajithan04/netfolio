@@ -1,5 +1,6 @@
+import SafeAnimatePresence from "./SafeAnimatePresence";
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion';
+import {motion,useMotionValueEvent,useScroll} from "framer-motion";
 import { sectionMeta, viewerProfiles, type ProfileId, type SectionId } from '../data/portfolio';
 import { useSmoothScroll } from '../hooks/smoothScroll';
 import { SeriesMark } from './Poster';
@@ -98,7 +99,7 @@ export default function Navbar({ order, profileId, onSwitch }: { order: SectionI
                 ▼
               </motion.span>
             </button>
-            <AnimatePresence>
+            <SafeAnimatePresence>
               {menu && (
                 <motion.div
                   role="menu"
@@ -129,7 +130,7 @@ export default function Navbar({ order, profileId, onSwitch }: { order: SectionI
                   ))}
                 </motion.div>
               )}
-            </AnimatePresence>
+            </SafeAnimatePresence>
           </div>
           <button
             type="button"
@@ -144,7 +145,7 @@ export default function Navbar({ order, profileId, onSwitch }: { order: SectionI
         </div>
       </div>
 
-      <AnimatePresence>
+      <SafeAnimatePresence>
         {mobileNav && (
           <motion.nav
             aria-label="Sections"
@@ -169,7 +170,7 @@ export default function Navbar({ order, profileId, onSwitch }: { order: SectionI
             ))}
           </motion.nav>
         )}
-      </AnimatePresence>
+      </SafeAnimatePresence>
     </motion.header>
   );
 }

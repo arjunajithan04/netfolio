@@ -1,5 +1,6 @@
+import SafeAnimatePresence from "./SafeAnimatePresence";
 import { useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import {motion} from "framer-motion";
 import { seasons } from '../data/portfolio';
 import { EASE, SectionHeading } from './fx';
 import EpisodeCard from './EpisodeCard';
@@ -39,7 +40,7 @@ export default function Seasons() {
         ))}
       </div>
 
-      <AnimatePresence mode="wait">
+      <SafeAnimatePresence mode="wait">
         <motion.div
           key={season.number}
           initial={{ opacity: 0, x: 40, filter: 'blur(8px)' }}
@@ -67,7 +68,7 @@ export default function Seasons() {
             <RailButtons rail={rail} />
           </div>
         </motion.div>
-      </AnimatePresence>
+      </SafeAnimatePresence>
     </>
   );
 }

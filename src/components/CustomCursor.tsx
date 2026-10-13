@@ -1,5 +1,6 @@
+import SafeAnimatePresence from "./SafeAnimatePresence";
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion';
+import {motion,useMotionValue,useSpring} from "framer-motion";
 import { useFinePointer, useReducedMotionPref } from '../hooks/useMedia';
 
 const LABELS: Record<string, string> = { view: 'VIEW', play: '▶', link: '↗', drag: '↔', close: '✕' };
@@ -70,7 +71,7 @@ export default function CustomCursor() {
       transition={{ type: 'spring', stiffness: 420, damping: 30 }}
     >
       <span className="absolute inset-0 rounded-full border" style={{ borderColor: 'inherit' }} />
-      <AnimatePresence>
+      <SafeAnimatePresence>
         {label && (
           <motion.span
             key={label}
@@ -82,7 +83,7 @@ export default function CustomCursor() {
             {label}
           </motion.span>
         )}
-      </AnimatePresence>
+      </SafeAnimatePresence>
     </motion.div>
   );
 }

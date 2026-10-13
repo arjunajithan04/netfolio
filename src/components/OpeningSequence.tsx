@@ -1,5 +1,6 @@
+import SafeAnimatePresence from "./SafeAnimatePresence";
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import {motion} from "framer-motion";
 import { profile } from '../data/portfolio';
 import { useReducedMotionPref } from '../hooks/useMedia';
 import { EASE, Magnetic } from './fx';
@@ -97,7 +98,7 @@ export default function OpeningSequence({ onDone }: { onDone: () => void }) {
       <motion.div className="absolute inset-x-0 top-0 z-30 h-[5vh] bg-black" initial={{ y: 0 }} animate={{ y: beat >= 6 ? '-100%' : 0 }} transition={{ duration: 0.85, ease: EASE }} />
       <motion.div className="absolute inset-x-0 bottom-0 z-30 h-[5vh] bg-black" initial={{ y: 0 }} animate={{ y: beat >= 6 ? '100%' : 0 }} transition={{ duration: 0.85, ease: EASE }} />
 
-      <AnimatePresence>
+      <SafeAnimatePresence>
         {beat === 1 && (
           <motion.div key="studio" className="absolute inset-0 z-10 flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, filter: 'blur(5px)' }} transition={{ duration: 0.45 }}>
             <motion.p className="font-sans text-[10px] font-semibold uppercase text-mist sm:text-xs" initial={{ letterSpacing: '0.18em', opacity: 0, y: 8 }} animate={{ letterSpacing: '0.48em', opacity: 1, y: 0 }} transition={{ duration: 0.85, ease: EASE }}>
@@ -105,7 +106,7 @@ export default function OpeningSequence({ onDone }: { onDone: () => void }) {
             </motion.p>
           </motion.div>
         )}
-      </AnimatePresence>
+      </SafeAnimatePresence>
 
       {/* Red separation glow behind the original portrait, not an image filter. */}
       <motion.div

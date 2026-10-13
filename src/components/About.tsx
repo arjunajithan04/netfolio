@@ -1,5 +1,6 @@
+import SafeAnimatePresence from "./SafeAnimatePresence";
 import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import {motion} from "framer-motion";
 import { education, experience, profile } from '../data/portfolio';
 import { useReducedMotionPref } from '../hooks/useMedia';
 import { EASE, SectionHeading, Tilt } from './fx';
@@ -104,7 +105,7 @@ export default function About() {
             >
               <span aria-hidden="true">⚽</span> {footballNoteOpen ? 'Close the extra' : 'A little extra'}
             </button>
-            <AnimatePresence initial={false}>
+            <SafeAnimatePresence initial={false}>
               {footballNoteOpen && (
                 <motion.div
                   id="football-easter-egg"
@@ -128,7 +129,7 @@ export default function About() {
                   </div>
                 </motion.div>
               )}
-            </AnimatePresence>
+            </SafeAnimatePresence>
           </div>
         </div>
       </div>

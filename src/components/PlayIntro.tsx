@@ -1,5 +1,6 @@
+import SafeAnimatePresence from "./SafeAnimatePresence";
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useMotionValue } from 'framer-motion';
+import {motion,useMotionValue} from "framer-motion";
 import { introSlides, profile } from '../data/portfolio';
 import { useScrollLock } from '../hooks/smoothScroll';
 import { useReducedMotionPref } from '../hooks/useMedia';
@@ -149,7 +150,7 @@ export default function PlayIntro({ onClose }: { onClose: () => void }) {
       </motion.div>
 
       {phase === 'reel' && (
-        <AnimatePresence mode="wait">
+        <SafeAnimatePresence mode="wait">
           <motion.div
             key={`backdrop-${index}`}
             className="absolute inset-0"
@@ -180,7 +181,7 @@ export default function PlayIntro({ onClose }: { onClose: () => void }) {
               </div>
             )}
           </motion.div>
-        </AnimatePresence>
+        </SafeAnimatePresence>
       )}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_45%,rgba(120,10,25,0.22),transparent_70%)]" />
 
@@ -196,7 +197,7 @@ export default function PlayIntro({ onClose }: { onClose: () => void }) {
       )}
 
       <div className="relative z-10 flex h-full items-center px-6 pb-20 pt-16 sm:px-12 lg:px-[9vw]">
-        <AnimatePresence mode="wait">
+        <SafeAnimatePresence mode="wait">
           {phase === 'reel' && (
             <motion.div
               key={index}
@@ -249,7 +250,7 @@ export default function PlayIntro({ onClose }: { onClose: () => void }) {
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </SafeAnimatePresence>
       </div>
 
       {phase === 'reel' && (

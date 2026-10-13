@@ -1,5 +1,6 @@
+import SafeAnimatePresence from "./SafeAnimatePresence";
 import { useMemo, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {motion,useReducedMotion} from "framer-motion";
 import { skillCategories, skillEvidence, type Skill } from '../data/portfolio';
 import { EASE, SectionHeading } from './fx';
 
@@ -72,7 +73,7 @@ export default function Skills() {
         </div>
 
         <div id="skill-panel" role="tabpanel" aria-labelledby={`skill-tab-${category.id}`} className="min-h-[380px]">
-          <AnimatePresence mode="wait" initial={false}>
+          <SafeAnimatePresence mode="wait" initial={false}>
             <motion.div
               key={category.id}
               initial={reduceMotion ? false : { opacity: 0, y: 12 }}
@@ -102,7 +103,7 @@ export default function Skills() {
                 ))}
               </div>
 
-              <AnimatePresence mode="wait" initial={false}>
+              <SafeAnimatePresence mode="wait" initial={false}>
                 <motion.section
                   key={selectedSkill.name}
                   aria-live="polite"
@@ -132,9 +133,9 @@ export default function Skills() {
                     </div>
                   </div>
                 </motion.section>
-              </AnimatePresence>
+              </SafeAnimatePresence>
             </motion.div>
-          </AnimatePresence>
+          </SafeAnimatePresence>
         </div>
       </div>
     </>
