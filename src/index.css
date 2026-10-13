@@ -1841,3 +1841,104 @@ a:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .finale-orbit-outer, .finale-eclipse-corona { animation: none !important; }
 }
+
+
+/* ─────────────────────────────────────────────────────────────
+   CRIMSON CURRENT — shared living atmosphere
+   Decorative only: no layout participation and no pointer capture.
+   ───────────────────────────────────────────────────────────── */
+.living-atmosphere {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  contain: layout paint;
+  opacity: .72;
+  --current-strength: .34;
+}
+.living-atmosphere__wash {
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(ellipse 45% 28% at 22% 48%, rgba(229, 19, 43, .095), transparent 72%),
+    radial-gradient(ellipse 36% 26% at 82% 60%, rgba(112, 7, 29, .12), transparent 75%);
+  transform: translate3d(0,0,0);
+  animation: current-wash 19s ease-in-out infinite alternate;
+}
+.living-atmosphere__ribbons {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: var(--current-opacity, .76);
+}
+.living-ribbon path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.living-ribbon--glow path { stroke: rgba(255, 37, 69, .65); stroke-width: 12; opacity: .22; }
+.living-ribbon--main path { stroke-width: 1.5; }
+.living-ribbon--main path:first-child { animation: current-flow 17s ease-in-out infinite alternate; }
+.living-ribbon--main path:last-child { animation: current-flow-reverse 23s ease-in-out infinite alternate; opacity: .7; }
+.living-ribbon__fine {
+  fill: none;
+  stroke: rgba(255, 83, 104, .28);
+  stroke-width: .65;
+  stroke-dasharray: 3 14;
+  stroke-linecap: round;
+  animation: current-dash 36s linear infinite;
+}
+.living-atmosphere__edge {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7,7,10,.08), transparent 24%, transparent 72%, rgba(7,7,10,.52));
+}
+.living-atmosphere--hero { --current-strength: .85; --current-opacity: .9; }
+.living-atmosphere--hero .living-atmosphere__ribbons { transform: scale(1.08) translateY(7%); }
+.living-atmosphere--hero .living-atmosphere__wash {
+  background:
+    radial-gradient(ellipse 42% 24% at 20% 44%, rgba(229,19,43,.16), transparent 72%),
+    radial-gradient(ellipse 32% 28% at 78% 62%, rgba(229,19,43,.15), transparent 76%);
+}
+.living-atmosphere--about { --current-strength: .42; --current-opacity: .65; }
+.living-atmosphere--journey { --current-strength: .32; --current-opacity: .56; }
+.living-atmosphere--projects { --current-strength: .48; --current-opacity: .72; }
+.living-atmosphere--skills { --current-strength: .36; --current-opacity: .58; }
+.living-atmosphere--moments { --current-strength: .28; --current-opacity: .5; }
+.living-atmosphere--story { --current-strength: .4; --current-opacity: .6; }
+.living-atmosphere--finale { --current-strength: .68; --current-opacity: .74; z-index: 1; mix-blend-mode: screen; }
+.living-atmosphere--finale .living-atmosphere__edge {
+  background: linear-gradient(180deg, rgba(7,7,10,.22), transparent 30%, rgba(7,7,10,.5));
+}
+@keyframes current-wash {
+  0% { transform: translate3d(-1.5%, -1%, 0) scale(.98); }
+  100% { transform: translate3d(1.5%, 1%, 0) scale(1.04); }
+}
+@keyframes current-flow {
+  0% { transform: translate3d(-1.5%, 1%, 0) scaleY(.92); }
+  50% { transform: translate3d(1%, -1.4%, 0) scaleY(1.06); }
+  100% { transform: translate3d(2%, .5%, 0) scaleY(.96); }
+}
+@keyframes current-flow-reverse {
+  0% { transform: translate3d(1%, -1%, 0) scaleY(1.05); }
+  100% { transform: translate3d(-2%, 1.5%, 0) scaleY(.94); }
+}
+@keyframes current-dash { to { stroke-dashoffset: -340; } }
+@media (max-width: 760px) {
+  .living-atmosphere { opacity: .62; }
+  .living-atmosphere__wash { animation-duration: 28s; }
+  .living-ribbon--glow path { stroke-width: 9; opacity: .15; }
+  .living-ribbon--main path { stroke-width: 1.2; }
+  .living-atmosphere--hero { opacity: .66; }
+  .living-atmosphere--hero .living-atmosphere__ribbons { transform: scale(1.35) translateY(10%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .living-atmosphere__wash,
+  .living-ribbon--main path,
+  .living-ribbon__fine { animation: none !important; }
+  .living-atmosphere { transform: none !important; }
+}

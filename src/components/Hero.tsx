@@ -5,6 +5,7 @@ import { useFinePointer } from '../hooks/useMedia';
 import { useSmoothScroll } from '../hooks/smoothScroll';
 import { EASE, Magnetic, Particles } from './fx';
 import { SeriesMark } from './Poster';
+import LivingAtmosphere from './LivingAtmosphere';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.25 } } };
 const item = {
@@ -60,6 +61,7 @@ export default function Hero({ onPlay, onResume, profileId }: { onPlay: () => vo
         my.set((e.clientY / window.innerHeight) * 2 - 1);
       }}
     >
+      <LivingAtmosphere variant="hero" targetRef={ref} />
       {/* atmosphere */}
       <motion.div aria-hidden className="absolute inset-0" style={{ x: glowX }}>
         <div className="absolute right-[-10%] top-[-10%] h-[90vh] w-[80vw] rounded-full bg-[radial-gradient(closest-side,rgba(229,19,43,0.38),rgba(229,19,43,0.08)_55%,transparent)] blur-2xl lg:right-[-4%] lg:w-[60vw]" />

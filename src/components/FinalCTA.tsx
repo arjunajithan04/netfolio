@@ -4,6 +4,7 @@ import { profile } from '../data/portfolio';
 import { useSmoothScroll } from '../hooks/smoothScroll';
 import { EASE, Magnetic } from './fx';
 import { SeriesMark } from './Poster';
+import LivingAtmosphere from './LivingAtmosphere';
 
 export default function FinalCTA({ onReplay }: { onReplay: () => void }) {
   const ref = useRef<HTMLElement>(null);
@@ -27,7 +28,8 @@ export default function FinalCTA({ onReplay }: { onReplay: () => void }) {
   ];
 
   return (
-    <section id="contact" ref={ref} className="finale-section relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4 pb-28 pt-24 text-center sm:px-6">
+    <section id="contact" ref={ref} className="finale-section relative isolate flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4 pb-28 pt-24 text-center sm:px-6">
+      <LivingAtmosphere variant="finale" targetRef={ref} />
       {/* Precision-built CSS finale: orbital geometry, restrained grid, and crimson light. */}
       <div className="finale-atmosphere" aria-hidden="true">
         <motion.div
