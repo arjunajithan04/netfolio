@@ -1038,3 +1038,127 @@ a:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .admin-dashboard-type, .admin-item-row, .admin-item-row::after, .admin-primary-button, .admin-publish-button { transition: none !important; }
 }
+
+
+/* Login background: CSS-only abstract reactor; no poster/photo assets. */
+.admin-login-screen {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 34% 48% at 50% 48%, rgba(168, 8, 36, .18), transparent 72%),
+    radial-gradient(ellipse 72% 80% at 50% 100%, rgba(74, 5, 24, .24), transparent 75%),
+    linear-gradient(135deg, #050507 0%, #0b070b 48%, #050507 100%) !important;
+}
+.admin-login-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .32;
+  background-image:
+    linear-gradient(rgba(255, 55, 82, .045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 55, 82, .045) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: radial-gradient(ellipse at center, #000 0%, transparent 82%);
+}
+.admin-login-atmosphere { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.admin-login-geometry { position: absolute; inset: 0; z-index: 0; overflow: hidden; opacity: .9; }
+.geometry-orbit { position: absolute; left: 50%; top: 50%; width: min(78vw, 980px); aspect-ratio: 1; border: 1px solid rgba(255, 45, 75, .12); border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 70px rgba(229, 19, 43, .035), inset 0 0 70px rgba(229, 19, 43, .025); }
+.geometry-orbit-one { animation: geometry-rotate 42s linear infinite; }
+.geometry-orbit-two { width: min(61vw, 760px); border-style: dashed; border-color: rgba(255, 255, 255, .08); animation: geometry-rotate 58s linear infinite reverse; }
+.geometry-orbit-three { width: min(43vw, 540px); border-color: rgba(255, 45, 75, .2); }
+.geometry-axis { position: absolute; left: 50%; top: 50%; width: min(110vw, 1400px); height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 45, 75, .22), transparent); transform: translate(-50%, -50%) rotate(28deg); }
+.geometry-axis-two { transform: translate(-50%, -50%) rotate(-28deg); opacity: .6; }
+.geometry-core { position: absolute; left: 50%; top: 50%; width: 110px; aspect-ratio: 1; border: 1px solid rgba(255, 45, 75, .32); transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 34px rgba(229, 19, 43, .12), inset 0 0 30px rgba(229, 19, 43, .07); }
+.geometry-core i { position: absolute; inset: 18%; border: 1px solid rgba(255, 255, 255, .18); background: radial-gradient(circle, rgba(255, 45, 75, .16), transparent 72%); }
+.geometry-node { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #ff5368; box-shadow: 0 0 18px 4px rgba(255, 45, 75, .42); }
+.geometry-node-one { left: 22%; top: 28%; }
+.geometry-node-two { right: 24%; top: 37%; }
+.geometry-node-three { left: 34%; bottom: 20%; }
+.admin-login-card { position: relative; z-index: 3; }
+@media (prefers-reduced-motion: reduce) {
+  .admin-login-geometry, .geometry-orbit-one, .geometry-orbit-two,
+  .admin-login-smoke, .admin-login-reactor > span, .admin-login-reactor > i,
+  .admin-login-sparks i { animation: none !important; }
+}
+
+
+/* Restore external film/series poster walls while retaining the CSS-only reactor. */
+.admin-login-poster-wall {
+  position: absolute;
+  top: -7%;
+  bottom: -7%;
+  width: clamp(190px, 27vw, 410px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: clamp(8px, 1.3vw, 20px);
+  padding: clamp(8px, 1.2vw, 18px);
+  opacity: .58;
+  filter: saturate(.78) contrast(1.04);
+  transform: perspective(1100px) rotateY(7deg);
+  pointer-events: none;
+}
+.admin-login-poster-wall-left { left: -2.5%; }
+.admin-login-poster-wall-right { right: -2.5%; transform: perspective(1100px) rotateY(-7deg); }
+.login-poster {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 67, 91, .18);
+  border-radius: 2px;
+  background: linear-gradient(145deg, #260810, #09080b 75%);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .42);
+}
+.login-poster:nth-child(2), .login-poster:nth-child(4) { transform: translateY(12px); }
+.login-poster-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .84;
+  filter: brightness(.66) saturate(.78);
+  transition: filter .45s ease, transform .7s ease;
+}
+.login-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(4,4,7,.05) 15%, rgba(4,4,7,.16) 48%, rgba(4,4,7,.92) 100%);
+}
+.login-poster i {
+  position: absolute;
+  z-index: 1;
+  left: 10px;
+  bottom: 10px;
+  color: rgba(255, 224, 229, .75);
+  font: 700 8px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .16em;
+  font-style: normal;
+}
+.admin-login-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(4,4,7,.2), rgba(4,4,7,.03) 23%, rgba(4,4,7,.02) 77%, rgba(4,4,7,.24)),
+    radial-gradient(ellipse 43% 72% at 50% 50%, rgba(5,5,8,.76), rgba(5,5,8,.12) 100%);
+}
+.admin-login-atmosphere { z-index: 1 !important; }
+.admin-login-poster-wall { z-index: 0; }
+.admin-login-geometry { z-index: 1 !important; }
+.admin-login-smoke { z-index: 2 !important; }
+.admin-login-reactor { z-index: 2 !important; }
+.admin-login-sparks { z-index: 3 !important; }
+.login-hud-label, .login-crosshair, .login-horizon-line { z-index: 4 !important; }
+.admin-login-card { position: relative; z-index: 5 !important; }
+@media (max-width: 760px) {
+  .admin-login-poster-wall { width: 42vw; opacity: .22; gap: 5px; padding: 5px; }
+  .admin-login-poster-wall-left { left: -15%; }
+  .admin-login-poster-wall-right { right: -15%; }
+  .login-poster i { display: none; }
+  .admin-login-screen::after { background: radial-gradient(ellipse 80% 65% at 50% 50%, rgba(5,5,8,.82), rgba(5,5,8,.28)); }
+}

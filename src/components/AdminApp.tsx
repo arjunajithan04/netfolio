@@ -393,17 +393,28 @@ export default function AdminApp() {
   if (!session || !isAdmin) {
     return <main className="admin-screen admin-login-screen">
       <div className="admin-login-atmosphere" aria-hidden="true">
-        <div className="admin-login-poster-wall admin-login-poster-wall-left">
-          <span className="login-poster poster-one" aria-label="The Blacklist"><img className="login-poster-image" src="https://m.media-amazon.com/images/M/MV5BNDFkZDI5ZGUtYTdkOC00YTFiLWJjNjMtNTQ3ZjIxMTY2ZjMyXkEyXkFqcGdeQXVyODUxOTU0OTg%40._V1_FMjpg_UX1000_.jpg" alt=""/><i>01</i></span>
-          <span className="login-poster poster-two" aria-label="Brooklyn Nine-Nine"><img className="login-poster-image" src="https://static.tvmaze.com/uploads/images/original_untouched/128/321052.jpg" alt=""/><i>02</i></span>
-          <span className="login-poster poster-three" aria-label="The Office"><img className="login-poster-image" src="https://cdn.cinemagay.it/cinemagay/2016/04/office-the.jpg" alt=""/><i>03</i></span>
-          <span className="login-poster poster-four" aria-label="Stranger Things"><img className="login-poster-image" src="https://es.web.img3.acsta.net/pictures/16/06/15/13/30/404641.jpg" alt=""/><i>04</i></span>
+        <div className="admin-login-poster-wall admin-login-poster-wall-left" aria-hidden="true">
+          <span className="login-poster poster-one"><img className="login-poster-image" src="https://m.media-amazon.com/images/M/MV5BNDFkZDI5ZGUtYTdkOC00YTFiLWJjNjMtNTQ3ZjIxMTY2ZjMyXkEyXkFqcGdeQXVyODUxOTU0OTg%40._V1_FMjpg_UX1000_.jpg" alt="" loading="lazy"/><i>01 / SERIES</i></span>
+          <span className="login-poster poster-two"><img className="login-poster-image" src="https://static.tvmaze.com/uploads/images/original_untouched/128/321052.jpg" alt="" loading="lazy"/><i>02 / COMEDY</i></span>
+          <span className="login-poster poster-three"><img className="login-poster-image" src="https://cdn.cinemagay.it/cinemagay/2016/04/office-the.jpg" alt="" loading="lazy"/><i>03 / COMEDY</i></span>
+          <span className="login-poster poster-four"><img className="login-poster-image" src="https://es.web.img3.acsta.net/pictures/16/06/15/13/30/404641.jpg" alt="" loading="lazy"/><i>04 / SCI-FI</i></span>
         </div>
-        <div className="admin-login-poster-wall admin-login-poster-wall-right">
-          <span className="login-poster poster-five" aria-label="Spider-Man: Brand New Day"><img className="login-poster-image" src="https://imagecinepolisgcc.enpointe.io/uploads/images/movies/1782028871177-movie_image1_1782028869987.jpg" alt=""/><i>05</i></span>
-          <span className="login-poster poster-six" aria-label="How I Met Your Mother"><img className="login-poster-image" src="https://img-s3.onedio.com/id-6985e12e285f633a9251a708/rev-0/w-900/h-1350/f-jpg/s-9b0bad9b0bd000c327fd9cde2cd026f631422cfa.jpg" alt=""/><i>06</i></span>
-          <span className="login-poster poster-seven" aria-label="Breaking Bad"><img className="login-poster-image" src="https://p3-sdbk2-media.byteimg.com/tos-cn-i-xv4ileqgde/6108d33c9b3b40568ff1080faf87bddd~tplv-xv4ileqgde-resize-w%3A750.image" alt=""/><i>07</i></span>
-          <span className="login-poster poster-eight" aria-label="Silicon Valley"><img className="login-poster-image" src="https://avatars.mds.yandex.net/get-kinopoisk-image/1773646/ae21f434-15cb-47d3-b821-235b60a7a36b/1920x" alt=""/><i>08</i></span>
+        <div className="admin-login-poster-wall admin-login-poster-wall-right" aria-hidden="true">
+          <span className="login-poster poster-five"><img className="login-poster-image" src="https://imagecinepolisgcc.enpointe.io/uploads/images/movies/1782028871177-movie_image1_1782028869987.jpg" alt="" loading="lazy"/><i>05 / FILM</i></span>
+          <span className="login-poster poster-six"><img className="login-poster-image" src="https://img-s3.onedio.com/id-6985e12e285f633a9251a708/rev-0/w-900/h-1350/f-jpg/s-9b0bad9b0bd000c327fd9cde2cd026f631422cfa.jpg" alt="" loading="lazy"/><i>06 / COMEDY</i></span>
+          <span className="login-poster poster-seven"><img className="login-poster-image" src="https://p3-sdbk2-media.byteimg.com/tos-cn-i-xv4ileqgde/6108d33c9b3b40568ff1080faf87bddd~tplv-resize-w%3A750.image" alt="" loading="lazy"/><i>07 / DRAMA</i></span>
+          <span className="login-poster poster-eight"><img className="login-poster-image" src="https://avatars.mds.yandex.net/get-kinopoisk-image/1773646/ae21f434-15cb-47d3-b821-235b60a7a36b/1920x" alt="" loading="lazy"/><i>08 / COMEDY</i></span>
+        </div>
+        <div className="admin-login-geometry" aria-hidden="true">
+          <span className="geometry-orbit geometry-orbit-one" />
+          <span className="geometry-orbit geometry-orbit-two" />
+          <span className="geometry-orbit geometry-orbit-three" />
+          <span className="geometry-axis geometry-axis-one" />
+          <span className="geometry-axis geometry-axis-two" />
+          <span className="geometry-core"><i /></span>
+          <span className="geometry-node geometry-node-one" />
+          <span className="geometry-node geometry-node-two" />
+          <span className="geometry-node geometry-node-three" />
         </div>
         <div className="admin-login-smoke" />
         <div className="admin-login-reactor"><span/><span/><span/><i/><b/></div>
