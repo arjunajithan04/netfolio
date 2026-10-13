@@ -17,7 +17,7 @@ export default function ResumeModal({ onClose }: { onClose: () => void }) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-[140] flex flex-col bg-black/90 backdrop-blur-md"
+      className="fixed inset-0 z-[140] flex flex-col overflow-hidden bg-black/90 backdrop-blur-md"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -35,12 +35,12 @@ export default function ResumeModal({ onClose }: { onClose: () => void }) {
         </div>
       </div>
       <motion.div
-        className="gutter flex-1 pb-6"
+        className="gutter min-h-0 flex-1 pb-6"
         initial={{ opacity: 0, y: 40, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.6, ease: EASE }}
       >
-        <div data-lenis-prevent className="h-full overflow-y-auto rounded-xl">
+        <div data-lenis-prevent className="h-full min-h-0 overflow-x-hidden overflow-y-auto overscroll-contain rounded-xl [scrollbar-gutter:stable] [touch-action:pan-y]" style={{ WebkitOverflowScrolling: "touch" }}>
           <ResumeSheet />
           {!profile.resumePdf && <p className="mt-4 text-center text-xs text-mist">A downloadable PDF can be added once your final resume is available.</p>}
         </div>
