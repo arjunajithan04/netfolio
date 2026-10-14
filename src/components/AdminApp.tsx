@@ -141,6 +141,52 @@ export default function AdminApp() {
     });
   }, [activeView, visibleItems, projectSearch, projectFilter, drafts, published]);
   const activeTypeLabel = activeType ? TYPES.find((type) => type.value === activeType)?.label ?? 'Content' : 'Content library';
+  const healthReport = useMemo(() => {
+    type HealthIssue = { id: string; itemId: string; title: string; type: ContentType; severity: 'error' | 'warning' | 'info'; message: string; field?: string };
+    const issues: HealthIssue[] = [];
+    const sourcePayload = (item: CmsItem) => drafts[item.id]?.payload ?? published[item.id]?.payload ?? {};
+    const hasText = (value: unknown) => typeof value === 'string' && value.trim().length > 0;
+    const validUrl = (value: unknown) => {
+      if (!hasText(value)) return false;
+      try { const url = new URL(String(value)); return url.protocol === 'https:' || url.protocol === 'http:'; } catch { return false; }
+    };
+    items.forEach((item) => {
+      const payload = sourcePayload(item);
+      const add = (severity: HealthIssue['severity'], message: string, field?: string) => issues.push({ id: `${item.id}:${field ?? message}`, itemId: item.id, title: item.admin_title || item.slug, type: item.content_type, severity, message, field });
+      if (!hasText(item.admin_title) || !hasText(item.slug)) add('error', 'Missing internal title or URL slug');
+      if (!published[item.id]) add('warning', 'Not published yet');
+      if (drafts[item.id] && published[item.id] && drafts[item.id].updated_at > published[item.id].published_at) add('info', 'Draft is newer than the published version');
+      if (item.content_type === 'project') {
+        if (!hasText(payload.title)) add('error', 'Project title is missing', 'title');
+        if (!hasText(payload.summary)) add('warning', 'Short description is missing', 'summary');
+        if (!Array.isArray(payload.technologies) || payload.technologies.length === 0) add('warning', 'No technologies listed', 'technologies');
+        if (hasText(payload.githubUrl) && !validUrl(payload.githubUrl)) add('error', 'GitHub URL is not a valid HTTP(S) URL', 'githubUrl');
+        if (hasText(payload.demoUrl) && !validUrl(payload.demoUrl)) add('error', 'Demo URL is not a valid HTTP(S) URL', 'demoUrl');
+        if (!hasText(payload.image)) add('warning', 'Project artwork is missing', 'image');
+      } else if (item.content_type === 'milestone') {
+        if (!hasText(payload.title)) add('error', 'Milestone title is missing', 'title');
+        if (!hasText(payload.description)) add('warning', 'Description is missing', 'description');
+        if (!hasText(payload.image)) add('warning', 'Milestone artwork is missing', 'image');
+      } else if (item.content_type === 'credential') {
+        if (!hasText(payload.title)) add('error', 'Credential title is missing', 'title');
+        if (!hasText(payload.issuer)) add('warning', 'Issuing organisation is missing', 'issuer');
+        if (hasText(payload.verificationUrl) && !validUrl(payload.verificationUrl)) add('error', 'Verification URL is not a valid HTTP(S) URL', 'verificationUrl');
+      } else if (item.content_type === 'profile') {
+        if (!hasText(payload.name)) add('error', 'Display name is missing', 'name');
+        if (!hasText(payload.headline)) add('warning', 'Profile headline is missing', 'headline');
+        if (!hasText(payload.anecdote)) add('warning', 'Introduction is missing', 'anecdote');
+        const links = Array.isArray(payload.socialLinks) ? payload.socialLinks as Record<string, unknown>[] : [];
+        links.forEach((link, index) => { if (hasText(link.url) && !validUrl(link.url)) add('error', `Social link ${index + 1} has an invalid URL`, 'socialLinks'); });
+      } else if (item.content_type === 'site_settings') {
+        if (!hasText(payload.seoTitle)) add('warning', 'SEO title is missing', 'seoTitle');
+        if (!hasText(payload.seoDescription)) add('warning', 'SEO description is missing', 'seoDescription');
+        if (hasText(payload.socialImage) && !validUrl(payload.socialImage) && !String(payload.socialImage).startsWith('/')) add('warning', 'Social preview image should be a URL or site-relative path', 'socialImage');
+      }
+    });
+    const counts = { error: issues.filter((i) => i.severity === 'error').length, warning: issues.filter((i) => i.severity === 'warning').length, info: issues.filter((i) => i.severity === 'info').length };
+    const priority: Record<HealthIssue['severity'], number> = { error: 0, warning: 1, info: 2 };
+    return { issues: issues.sort((a, b) => priority[a.severity] - priority[b.severity]), counts, checked: items.length };
+  }, [items, drafts, published]);
   const selectedDraft = selected ? drafts[selected.id] : undefined;
   const selectedPublished = selected ? published[selected.id] : undefined;
   const draftMatchesEditor = useMemo(() => {
@@ -511,7 +557,7 @@ export default function AdminApp() {
         animate="visible"
         aria-label="Netfolio administrator sign in"
       >
-        <motion.img className="admin-login-monogram" src="/logo-ab.png" alt="Arjun Ajithan" variants={loginItemVariants(prefersReducedMotion)} />
+        <motion.img className="admin-login-monogram" src="/logo.svg" alt="Arjun Ajithan" variants={loginItemVariants(prefersReducedMotion)} />
         <motion.h1 className="admin-login-title" variants={loginTitleVariants(prefersReducedMotion)}><span>WELCOME</span><em>BACK.</em></motion.h1>
         <motion.p className="admin-login-subtitle" variants={loginItemVariants(prefersReducedMotion)}>SIGN IN TO YOUR PRIVATE WORKSPACE.</motion.p>
         <motion.label className="admin-login-label" variants={loginItemVariants(prefersReducedMotion)}><span>Email</span><span className="admin-login-input-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><input type="email" autoComplete="username" required value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="Enter your email"/></span></motion.label>
@@ -551,6 +597,12 @@ export default function AdminApp() {
           <section className="admin-dashboard-section admin-dashboard-recent"><div className="admin-card-heading"><div><span className="admin-kicker">RECENTLY UPDATED</span><h2>Latest content</h2></div><span className="admin-count">{items.length} ITEMS</span></div>
             {items.length === 0 ? <div className="admin-empty-state"><h3>Your workspace is ready.</h3><p>Import the current site content as drafts or create your first entry to get started.</p></div> : <div className="admin-item-list">{[...items].sort((a,b) => b.updated_at.localeCompare(a.updated_at)).slice(0,5).map((item) => <button key={item.id} className="admin-item-row" onClick={() => { setActiveView(item.content_type); setSelectedId(item.id); setContentType(item.content_type); setError(''); setMessage(''); }}><span className="admin-item-type">{TYPES.find((type) => type.value === item.content_type)?.label.slice(0,1) ?? 'C'}</span><span className="admin-item-copy"><strong>{item.admin_title}</strong><small>{item.content_type} / {item.slug}</small><span className="admin-item-status"><i className={published[item.id] ? 'published' : ''}/>{published[item.id] ? 'PUBLISHED' : 'UNPUBLISHED'}{drafts[item.id] ? ' · DRAFT SAVED' : ''}{item.content_type === 'project' && Boolean((drafts[item.id]?.payload ?? published[item.id]?.payload ?? {}).featured) ? ' · FEATURED' : ''}</span></span><span className="admin-item-arrow">↗</span></button>)}</div>}
           </section>
+          <section className="admin-dashboard-section admin-health-section">
+            <div className="admin-card-heading"><div><span className="admin-kicker">SYSTEM AUDIT / CONTENT QUALITY</span><h2>Portfolio health</h2><p className="admin-health-summary">Checked {healthReport.checked} CMS entries using their saved content. URL syntax and required fields are checked locally; remote links are not pinged.</p></div><span className={`admin-health-score ${healthReport.counts.error ? 'has-errors' : healthReport.counts.warning ? 'has-warnings' : 'is-healthy'}`}>{healthReport.counts.error ? 'ACTION NEEDED' : healthReport.counts.warning ? 'NEEDS REVIEW' : 'LOOKING GOOD'}</span></div>
+            <div className="admin-health-metrics"><article><span className="admin-health-dot error"/><strong>{healthReport.counts.error}</strong><small>Errors</small></article><article><span className="admin-health-dot warning"/><strong>{healthReport.counts.warning}</strong><small>Warnings</small></article><article><span className="admin-health-dot info"/><strong>{healthReport.counts.info}</strong><small>Draft notes</small></article><article><span className="admin-health-dot neutral"/><strong>{Math.max(0, healthReport.checked - new Set(healthReport.issues.map((issue) => issue.itemId)).size)}</strong><small>Entries with no findings</small></article></div>
+            {healthReport.issues.length === 0 ? <div className="admin-health-empty"><span>✓</span><div><strong>No content issues detected</strong><p>Required fields and supported URL formats look good across the current CMS entries.</p></div></div> : <div className="admin-health-list">{healthReport.issues.slice(0, 12).map((issue) => <button key={issue.id} className="admin-health-issue" onClick={() => { const item = items.find((candidate) => candidate.id === issue.itemId); if (!item) return; setActiveView(item.content_type); setContentType(item.content_type); setSelectedId(item.id); setError(''); setMessage(''); }}><span className={`admin-health-severity ${issue.severity}`}>{issue.severity === 'error' ? 'ERROR' : issue.severity === 'warning' ? 'REVIEW' : 'DRAFT'}</span><span className="admin-health-issue-copy"><strong>{issue.title}</strong><small>{issue.type.replace('_', ' ')}{issue.field ? ` · ${issue.field}` : ''}</small><span>{issue.message}</span></span><span className="admin-health-open">FIX ↗</span></button>)}{healthReport.issues.length > 12 && <p className="admin-health-more">Showing 12 of {healthReport.issues.length} findings. Resolve higher-priority errors first.</p>}</div>}
+            <div className="admin-health-footnote">This is a content-quality audit, not an uptime monitor. It does not verify remote URL availability, image fetchability, deployment status, or search-engine indexing.</div>
+          </section>
         </> : <>
           <div className="admin-page-heading"><div><span className="admin-kicker">NETFOLIO CMS / {activeTypeLabel.toUpperCase()}</span><h1>{activeTypeLabel} <em>management.</em></h1><p>{(TYPES.find((type) => type.value === activeType)?.description ?? 'Manage this content type.') + ' Save privately. Publish only when ready.'}</p></div><div className="admin-heading-actions"><button className="admin-primary-button admin-new-button" onClick={startNew}>＋ NEW {activeTypeLabel.toUpperCase()}</button></div></div>
           <div className="admin-editor-grid admin-content-workspace">
@@ -587,6 +639,6 @@ export default function AdminApp() {
 }
 
 function Brand() {
-  return <a href="/" className="admin-brand" aria-label="Return to Arjun Ajithan portfolio"><img className="admin-brand-mark" src="/logo-ab.png" alt="" /><span><strong>ARJUN AJITHAN</strong><small>NETFOLIO / PRIVATE CMS</small></span></a>;
+  return <a href="/" className="admin-brand" aria-label="Return to Arjun Ajithan portfolio"><img className="admin-brand-mark" src="/logo.svg" alt="" /><span><strong>ARJUN AJITHAN</strong><small>NETFOLIO / PRIVATE CMS</small></span></a>;
 }
 

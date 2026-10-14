@@ -2104,3 +2104,70 @@ a:focus-visible {
 .admin-sortable-list-row input { flex: 1; min-width: 0; }
 .admin-sortable-list-row.is-dragging { opacity: .48; border-color: rgba(255,49,87,.8); }
 .admin-sortable-list > small { display: block; margin-top: 8px; }
+
+/* Portfolio Health — live CMS content-quality audit */
+.admin-health-section { overflow: hidden; }
+.admin-health-summary { margin: 7px 0 0; max-width: 720px; color: #918994; font-size: .82rem; line-height: 1.6; }
+.admin-health-score { flex: 0 0 auto; padding: 8px 10px; border: 1px solid rgba(255,255,255,.12); color: #b9b1bb; font-size: .58rem; font-weight: 800; letter-spacing: .13em; }
+.admin-health-score.has-errors { color: #ff687b; border-color: rgba(255,61,90,.45); background: rgba(255,61,90,.07); }
+.admin-health-score.has-warnings { color: #e8bd7b; border-color: rgba(232,189,123,.35); background: rgba(232,189,123,.05); }
+.admin-health-score.is-healthy { color: #9bd8b4; border-color: rgba(119,203,155,.32); background: rgba(119,203,155,.05); }
+.admin-health-metrics { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); border-bottom: 1px solid rgba(255,255,255,.08); }
+.admin-health-metrics article { position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 9px; padding: 17px 18px; border-right: 1px solid rgba(255,255,255,.07); }
+.admin-health-metrics article:last-child { border-right: 0; }
+.admin-health-metrics strong { color: #f5eff0; font: 1.75rem/1 var(--font-display); }
+.admin-health-metrics small { grid-column: 2; color: #8c8490; font-size: .68rem; }
+.admin-health-dot { width: 7px; height: 7px; border-radius: 50%; background: #8b8490; box-shadow: 0 0 10px currentColor; }
+.admin-health-dot.error { color: #ff3d5a; background: #ff3d5a; }
+.admin-health-dot.warning { color: #e8bd7b; background: #e8bd7b; }
+.admin-health-dot.info { color: #a99bd5; background: #a99bd5; }
+.admin-health-dot.neutral { color: #9bd8b4; background: #9bd8b4; }
+.admin-health-list { display: grid; }
+.admin-health-issue { width: 100%; display: grid; grid-template-columns: 70px minmax(0,1fr) auto; align-items: center; gap: 14px; padding: 13px 18px; text-align: left; border: 0; border-bottom: 1px solid rgba(255,255,255,.065); background: transparent; color: inherit; cursor: pointer; transition: background .18s ease; }
+.admin-health-issue:hover { background: linear-gradient(90deg,rgba(229,19,43,.10),rgba(229,19,43,.015)); }
+.admin-health-severity { padding: 5px 6px; border: 1px solid rgba(255,255,255,.12); text-align: center; font-size: .54rem; font-weight: 800; letter-spacing: .09em; }
+.admin-health-severity.error { color: #ff687b; border-color: rgba(255,61,90,.35); }
+.admin-health-severity.warning { color: #e8bd7b; border-color: rgba(232,189,123,.28); }
+.admin-health-severity.info { color: #b8a9e8; border-color: rgba(184,169,232,.25); }
+.admin-health-issue-copy { min-width: 0; display: grid; gap: 3px; }
+.admin-health-issue-copy strong { overflow: hidden; color: #e8e1e8; font-size: .78rem; text-overflow: ellipsis; white-space: nowrap; }
+.admin-health-issue-copy small { color: #8f8793; font-size: .61rem; text-transform: uppercase; letter-spacing: .08em; }
+.admin-health-issue-copy > span { color: #aaa1ad; font-size: .72rem; line-height: 1.4; }
+.admin-health-open { color: #ff5368; font-size: .6rem; font-weight: 800; letter-spacing: .1em; }
+.admin-health-empty { display: flex; align-items: center; gap: 13px; padding: 22px 18px; }
+.admin-health-empty > span { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid rgba(119,203,155,.35); color: #9bd8b4; }
+.admin-health-empty strong { color: #eee7ec; font-size: .82rem; }
+.admin-health-empty p,.admin-health-more { margin: 4px 0 0; color: #928995; font-size: .72rem; }
+.admin-health-more { padding: 0 18px 14px; }
+.admin-health-footnote { padding: 12px 18px; border-top: 1px solid rgba(255,255,255,.07); color: #716a76; font-size: .62rem; line-height: 1.6; }
+@media (max-width: 720px) { .admin-health-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); } .admin-health-metrics article:nth-child(2) { border-right: 0; } .admin-health-metrics article:nth-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,.07); } .admin-health-issue { grid-template-columns: 58px minmax(0,1fr); gap: 9px; padding: 12px; } .admin-health-open { display: none; } .admin-health-score { align-self: flex-start; } }
+@media (prefers-reduced-motion: reduce) { .admin-health-issue { transition: none; } }
+
+/* Hidden GTA-inspired command console — public portfolio only */
+.netfolio-command-backdrop { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 22px; background: rgba(2,2,4,.76); backdrop-filter: blur(12px) saturate(.72); -webkit-backdrop-filter: blur(12px) saturate(.72); }
+.netfolio-command-dialog { position: relative; width: min(520px,100%); overflow: hidden; border: 1px solid rgba(255,61,90,.44); background: linear-gradient(145deg,rgba(25,18,23,.97),rgba(7,7,10,.98) 62%); box-shadow: 0 30px 110px rgba(0,0,0,.65),0 0 45px rgba(229,19,43,.12),inset 0 1px rgba(255,255,255,.07); padding: clamp(22px,4vw,34px); }
+.netfolio-command-dialog::before { content:""; position:absolute; inset:0 0 auto; height:2px; background:linear-gradient(90deg,transparent,#ff3157 20%,#ff3157 80%,transparent); }
+.netfolio-command-topline { display:flex; align-items:center; gap:10px; color:#a49ba5; font-size:9px; font-weight:800; letter-spacing:.2em; }
+.netfolio-command-mark { display:grid; place-items:center; width:29px; height:29px; border:1px solid rgba(255,61,90,.65); color:#f7edf0; font:700 11px/1 var(--font-sans); letter-spacing:-.08em; }
+.netfolio-command-topline i { color:#ff3d5a; font-style:normal; }
+.netfolio-command-topline > button { margin-left:auto; border:1px solid rgba(255,255,255,.13); width:29px; height:29px; color:#c9c0c9; font-size:20px; line-height:1; transition:background .18s,color .18s,border-color .18s; }
+.netfolio-command-topline > button:hover { color:white; border-color:rgba(255,61,90,.65); background:rgba(255,61,90,.12); }
+.netfolio-command-kicker { margin:30px 0 10px; color:#ff526a; font-size:9px; font-weight:800; letter-spacing:.22em; }
+.netfolio-command-dialog h2 { margin:0; color:#f4efec; font:clamp(2.7rem,8vw,4.1rem)/.92 var(--font-display); text-transform:uppercase; }
+.netfolio-command-dialog h2 em { color:#ff4964; font-family:var(--font-serif); font-weight:400; text-transform:none; }
+.netfolio-command-description { margin:15px 0 27px; color:#9c929d; font-size:12px; line-height:1.7; }
+.netfolio-command-label { display:block; margin-bottom:9px; color:#8f8591; font-size:8px; font-weight:800; letter-spacing:.18em; }
+.netfolio-command-input-wrap { display:flex; align-items:center; gap:12px; min-height:54px; border:1px solid rgba(255,61,90,.4); background:rgba(0,0,0,.34); padding:0 15px; box-shadow:inset 0 0 20px rgba(255,61,90,.025); }
+.netfolio-command-input-wrap:focus-within { border-color:#ff3d5a; box-shadow:0 0 0 3px rgba(255,61,90,.09),inset 0 0 20px rgba(255,61,90,.04); }
+.netfolio-command-input-wrap > span { color:#ff3d5a; font:26px/1 var(--font-sans); }
+.netfolio-command-input-wrap input { width:100%; min-width:0; border:0; outline:0; background:transparent; color:#fff3f4; font:500 13px/1.4 var(--font-sans); letter-spacing:.04em; }
+.netfolio-command-input-wrap input::placeholder { color:#655b67; }
+.netfolio-command-feedback { min-height:27px; padding-top:9px; color:#817884; font-size:10px; }
+.netfolio-command-feedback:not(:empty) { transition:color .18s; }
+.netfolio-command-footer { display:flex; align-items:center; flex-wrap:wrap; gap:14px; margin-top:13px; padding-top:17px; border-top:1px solid rgba(255,255,255,.08); color:#8e8490; font-size:8px; font-weight:800; letter-spacing:.1em; }
+.netfolio-command-footer > span { display:flex; align-items:center; gap:6px; }
+.netfolio-command-footer kbd { padding:4px 5px; border:1px solid rgba(255,255,255,.15); color:#d6cdd6; font:inherit; }
+.netfolio-command-footer button { margin-left:auto; min-height:35px; padding:0 12px; border:1px solid rgba(255,61,90,.55); background:linear-gradient(110deg,#a80d27,#fa2d4e); color:#fff; font-size:9px; font-weight:900; letter-spacing:.08em; }
+.netfolio-command-footer button:hover { filter:brightness(1.12); }
+@media (max-width:480px) { .netfolio-command-footer { gap:9px; } .netfolio-command-footer button { width:100%; margin:4px 0 0; } }
+@media (prefers-reduced-motion:reduce) { .netfolio-command-topline > button,.netfolio-command-footer button { transition:none; } }

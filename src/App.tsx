@@ -1,5 +1,5 @@
 import SafeAnimatePresence from "./components/SafeAnimatePresence";
-import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode, type FormEvent } from 'react';
 import {LayoutGroup,motion} from "framer-motion";
 import { viewerProfiles, type ProfileId, type Project, type SectionId } from './data/portfolio';
 import { SmoothScrollProvider, useSmoothScroll } from './hooks/smoothScroll';
@@ -31,6 +31,11 @@ type Stage = 'opening' | 'profiles' | 'home';
 
 const STORAGE_KEY = 'arjun-ajithan-series-profile';
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return Boolean(target.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""], [role="textbox"], button, a, [role="button"]'));
+}
+
 function readStoredProfile(): ProfileId | null {
   try {
     const v = sessionStorage.getItem(STORAGE_KEY);
@@ -57,8 +62,54 @@ function Series() {
   const [project, setProject] = useState<Project | null>(null);
   const [resumeOpen, setResumeOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [command, setCommand] = useState('');
+  const [commandFeedback, setCommandFeedback] = useState('');
+  const commandInputRef = useRef<HTMLInputElement>(null);
   const [, setContentRevision] = useState(0);
   const { scrollTo, lock, unlock } = useSmoothScroll();
+
+  useEffect(() => {
+    const handleCommandShortcut = (event: KeyboardEvent) => {
+      if (event.key !== '`' || event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
+      if (isEditableTarget(event.target) || commandOpen) return;
+      event.preventDefault();
+      setCommand('');
+      setCommandFeedback('');
+      setCommandOpen(true);
+    };
+    window.addEventListener('keydown', handleCommandShortcut);
+    return () => window.removeEventListener('keydown', handleCommandShortcut);
+  }, [commandOpen]);
+
+  useEffect(() => {
+    if (!commandOpen) return;
+    const frame = window.requestAnimationFrame(() => commandInputRef.current?.focus());
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setCommandOpen(false);
+        setCommandFeedback('');
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [commandOpen]);
+
+  const submitHiddenCommand = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (command.trim().toLowerCase() === 'admin') {
+      setCommandOpen(false);
+      window.location.assign('/admin');
+      return;
+    }
+    setCommandFeedback('Command not recognized. Try again.');
+    setCommand('');
+    commandInputRef.current?.focus();
+  };
 
   useEffect(() => {
     let active = true;
@@ -127,6 +178,38 @@ function Series() {
     <LayoutGroup>
       <div className="grain" aria-hidden />
       <CustomCursor />
+
+      <SafeAnimatePresence>
+        {commandOpen && (
+          <motion.div
+            className="netfolio-command-backdrop"
+            role="presentation"
+            onMouseDown={(event) => { if (event.target === event.currentTarget) setCommandOpen(false); }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <motion.section
+              className="netfolio-command-dialog"
+              role="dialog" aria-modal="true" aria-labelledby="netfolio-command-title"
+              initial={{ opacity: 0, y: 18, scale: .97, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: 10, scale: .985, filter: 'blur(5px)' }}
+              transition={{ duration: .24, ease: EASE }}
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <div className="netfolio-command-topline"><span className="netfolio-command-mark">AB</span><span>NETFOLIO <i>·</i> CONSOLE</span><button type="button" aria-label="Close command console" onClick={() => setCommandOpen(false)}>×</button></div>
+              <p className="netfolio-command-kicker">HIDDEN INTERFACE / 01</p>
+              <h2 id="netfolio-command-title">Enter <em>command.</em></h2>
+              <p className="netfolio-command-description">A private shortcut for the curious. Proceed with intent.</p>
+              <form onSubmit={submitHiddenCommand}>
+                <label className="netfolio-command-label" htmlFor="netfolio-command-input">COMMAND LINE</label>
+                <div className="netfolio-command-input-wrap"><span aria-hidden="true">›</span><input ref={commandInputRef} id="netfolio-command-input" autoComplete="off" spellCheck={false} value={command} onChange={(event) => { setCommand(event.target.value); setCommandFeedback(''); }} placeholder="Type a command…" /></div>
+                <div className="netfolio-command-feedback" role="status" aria-live="polite">{commandFeedback || 'Press Enter to execute'}</div>
+                <div className="netfolio-command-footer"><span><kbd>ENTER</kbd> EXECUTE</span><span><kbd>ESC</kbd> CLOSE</span><button type="submit">RUN COMMAND ↗</button></div>
+              </form>
+            </motion.section>
+          </motion.div>
+        )}
+      </SafeAnimatePresence>
 
       <SafeAnimatePresence>
         {stage === 'opening' && <OpeningSequence key="opening" onDone={() => setStage('profiles')} />}
