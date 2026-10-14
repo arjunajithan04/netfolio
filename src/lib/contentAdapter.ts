@@ -101,17 +101,37 @@ function projectFromRow(row: PublishedCmsRow, existing?: Project): Project {
 }
 
 function applyProjects(rows: PublishedCmsRow[]) {
-  const remoteBySlug = new Map(rows.map((row) => [row.slug, row]));
+  // The public portfolio must follow the CMS-published ordering, not the
+  // bundled baseline array order. Match existing projects to their published
+  // rows, retain baseline-only projects as a stable fallback, then sort the
+  // resulting collection by the published sort_order.
+  const orderedRows = [...rows].sort((a, b) => a.sort_order - b.sort_order || a.slug.localeCompare(b.slug));
+  const remoteBySlug = new Map(orderedRows.map((row) => [row.slug, row]));
   const baselineProjects = baseline.projects as Project[];
   const merged = baselineProjects.map((project) => {
-    const row = remoteBySlug.get(project.id) ?? rows.find((candidate) => slugify(text(candidate.payload.title, candidate.slug)) === slugify(project.title));
+    const row = remoteBySlug.get(project.id) ?? orderedRows.find((candidate) => slugify(text(candidate.payload.title, candidate.slug)) === slugify(project.title));
     return row ? projectFromRow(row, project) : project;
   });
-  for (const row of rows) {
+  for (const row of orderedRows) {
     const title = text(row.payload.title, row.slug);
     const already = merged.some((project) => project.id === row.slug || slugify(project.title) === slugify(title));
     if (!already) merged.push(projectFromRow(row));
   }
+
+  const rankById = new Map<string, number>();
+  orderedRows.forEach((row, index) => {
+    rankById.set(row.slug, index);
+    rankById.set(slugify(text(row.payload.title, row.slug)), index);
+  });
+  const baselineIndex = new Map(baselineProjects.map((project, index) => [project.id, index]));
+  merged.sort((a, b) => {
+    const aRank = rankById.get(a.id) ?? rankById.get(slugify(a.title));
+    const bRank = rankById.get(b.id) ?? rankById.get(slugify(b.title));
+    if (aRank !== undefined && bRank !== undefined) return aRank - bRank;
+    if (aRank !== undefined) return -1;
+    if (bRank !== undefined) return 1;
+    return (baselineIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (baselineIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER);
+  });
   replace(projects, merged);
 }
 

@@ -107,7 +107,7 @@ export default function AdminApp() {
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [published, setPublished] = useState<Record<string, Published>>({});
   const [selectedId, setSelectedId] = useState('');
-  const [activeView, setActiveView] = useState<'library' | ContentType>('library');
+  const [activeView, setActiveView] = useState<'dashboard' | ContentType>('dashboard');
   const [contentType, setContentType] = useState<ContentType>('project');
   const [slug, setSlug] = useState('');
   const [title, setTitle] = useState('');
@@ -121,10 +121,25 @@ export default function AdminApp() {
   const [uploadPath, setUploadPath] = useState('');
   const [uploadBusy, setUploadBusy] = useState(false);
   const [importBusy, setImportBusy] = useState(false);
+  const [projectSearch, setProjectSearch] = useState('');
+  const [projectFilter, setProjectFilter] = useState<'all' | 'draft' | 'published' | 'featured'>('all');
+  const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null);
+  const [draggedArrayRow, setDraggedArrayRow] = useState<{ field: string; index: number } | null>(null);
+  const [reorderBusy, setReorderBusy] = useState(false);
 
   const selected = useMemo(() => items.find((item) => item.id === selectedId) ?? null, [items, selectedId]);
-  const visibleItems = useMemo(() => activeView === 'library' ? items : items.filter((item) => item.content_type === activeView), [items, activeView]);
-  const activeType = activeView === 'library' ? null : activeView;
+  const visibleItems = useMemo(() => activeView === 'dashboard' ? items : items.filter((item) => item.content_type === activeView), [items, activeView]);
+  const activeType = activeView === 'dashboard' ? null : activeView;
+  const filteredItems = useMemo(() => {
+    if (activeView !== 'project') return visibleItems;
+    const query = projectSearch.trim().toLowerCase();
+    return visibleItems.filter((item) => {
+      const matchesQuery = !query || `${item.admin_title} ${item.slug} ${item.content_type}`.toLowerCase().includes(query);
+      const payload = drafts[item.id]?.payload ?? published[item.id]?.payload ?? {};
+      const matchesStatus = projectFilter === 'all' || (projectFilter === 'draft' ? Boolean(drafts[item.id]) : projectFilter === 'published' ? Boolean(published[item.id]) : Boolean(payload.featured));
+      return matchesQuery && matchesStatus;
+    });
+  }, [activeView, visibleItems, projectSearch, projectFilter, drafts, published]);
   const activeTypeLabel = activeType ? TYPES.find((type) => type.value === activeType)?.label ?? 'Content' : 'Content library';
   const selectedDraft = selected ? drafts[selected.id] : undefined;
   const selectedPublished = selected ? published[selected.id] : undefined;
@@ -157,6 +172,61 @@ export default function AdminApp() {
     setPublished(Object.fromEntries(((publishedResult.data ?? []) as Published[]).map((row) => [row.item_id, row])));
     if (selectedId && !nextItems.some((item) => item.id === selectedId)) setSelectedId('');
   }, [selectedId]);
+
+  const reorderEntries = async (sourceId: string, targetId: string) => {
+    if (!supabase || reorderBusy || sourceId === targetId) return;
+    if (activeView === 'dashboard') return;
+    if (activeView === 'project' && (projectSearch.trim() || projectFilter !== 'all')) {
+      setError('Clear the project search and filter before reordering, so positions stay predictable.');
+      return;
+    }
+    const originalItems = items;
+    const typeItems = items.filter((item) => item.content_type === activeView).sort((a, b) => a.sort_order - b.sort_order || a.admin_title.localeCompare(b.admin_title));
+    const from = typeItems.findIndex((item) => item.id === sourceId);
+    const to = typeItems.findIndex((item) => item.id === targetId);
+    if (from < 0 || to < 0) return;
+    const reordered = [...typeItems];
+    const [moved] = reordered.splice(from, 1);
+    reordered.splice(to, 0, moved);
+    const normalized = reordered.map((item, index) => ({ ...item, sort_order: index + 1 }));
+    setItems((current) => current.map((item) => normalized.find((next) => next.id === item.id) ?? item));
+    setReorderBusy(true); setError(''); setMessage(`Saving ${activeView === 'site_settings' ? 'site settings' : activeView} order…`);
+    try {
+      const results = await Promise.all(normalized.map(async (item) => {
+        const [itemUpdate, publishedUpdate] = await Promise.all([
+          supabase!.from('cms_items').update({ sort_order: item.sort_order, updated_at: new Date().toISOString() }).eq('id', item.id),
+          supabase!.from('cms_published_content').update({ sort_order: item.sort_order }).eq('item_id', item.id),
+        ]);
+        return itemUpdate.error ?? publishedUpdate.error;
+      }));
+      const failed = results.find(Boolean);
+      if (failed) throw failed;
+      setMessage(`${activeView === 'site_settings' ? 'Site settings' : activeView.charAt(0).toUpperCase() + activeView.slice(1)} order saved. Positions updated automatically.`);
+      await loadContent();
+    } catch (e) {
+      setItems(originalItems);
+      setError(e instanceof Error ? `Could not save order: ${e.message}` : 'Could not save order.');
+      setMessage('');
+      await loadContent();
+    } finally { setReorderBusy(false); setDraggedProjectId(null); }
+  };
+
+  const reorderPayloadArray = (fieldKey: string, sourceIndex: number, targetIndex: number) => {
+    if (sourceIndex === targetIndex) return;
+    try {
+      const payload = parsePayload();
+      const value = payload[fieldKey];
+      if (!Array.isArray(value)) return;
+      const next = [...value];
+      const [moved] = next.splice(sourceIndex, 1);
+      next.splice(targetIndex, 0, moved);
+      payload[fieldKey] = next;
+      setPayloadText(safeJson(payload));
+      setMessage(`${fieldKey} order updated. Save the draft to keep the new order.`);
+    } catch {
+      setError('Could not reorder this list because the current content is invalid.');
+    } finally { setDraggedArrayRow(null); }
+  };
 
   const verifyAdmin = useCallback(async (currentSession: Session | null) => {
     setSession(currentSession);
@@ -231,11 +301,19 @@ export default function AdminApp() {
     try { payload = parsePayload(); } catch { /* Keep the form usable with an empty payload. */ }
     const value = payload[field.key];
     if (field.kind === 'boolean') return <label className="admin-toggle-field" key={field.key}><span><strong>{field.label}</strong><small>Enable or disable this option.</small></span><input type="checkbox" checked={Boolean(value)} onChange={(e) => updatePayloadField(field.key, e.target.checked)}/></label>;
-    if (field.kind === 'list') return <label className="admin-full-field admin-friendly-field" key={field.key}>{field.label}<textarea rows={field.rows ?? 4} value={normaliseList(value).join('\n')} onChange={(e) => updatePayloadField(field.key, e.target.value.split('\n').map((v) => v.trim()).filter(Boolean))} placeholder="One item per line"/><small>{field.help ?? 'Enter one item per line.'}</small></label>;
+    if (field.kind === 'list') {
+      const listRows = normaliseList(value);
+      const reorderList = (from: number, to: number) => {
+        if (from === to) return;
+        const next = [...listRows]; const [moved] = next.splice(from, 1); next.splice(to, 0, moved);
+        updatePayloadField(field.key, next);
+      };
+      return <fieldset className="admin-full-field admin-friendly-field admin-sortable-list" key={field.key}><legend>{field.label}</legend>{listRows.map((entry, index) => <div key={`${field.key}-${index}`} className={`admin-sortable-list-row ${draggedArrayRow?.field === field.key && draggedArrayRow.index === index ? 'is-dragging' : ''}`} draggable={listRows.length > 1} onDragStart={(event) => { setDraggedArrayRow({ field: field.key, index }); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', String(index)); }} onDragOver={(event) => { if (draggedArrayRow?.field === field.key && draggedArrayRow.index !== index) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; } }} onDrop={(event) => { event.preventDefault(); const from = Number(event.dataTransfer.getData('text/plain')); if (draggedArrayRow?.field === field.key && Number.isInteger(from)) reorderList(from, index); setDraggedArrayRow(null); }} onDragEnd={() => setDraggedArrayRow(null)}><span className="admin-array-drag-handle" title="Drag to reorder" aria-hidden="true">⠿</span><input aria-label={`${field.label} ${index + 1}`} value={entry} onChange={(event) => updatePayloadField(field.key, listRows.map((item, i) => i === index ? event.target.value : item))}/><button type="button" className="admin-remove-row" onClick={() => updatePayloadField(field.key, listRows.filter((_, i) => i !== index))}>REMOVE</button></div>)}<button type="button" className="admin-secondary-button" onClick={() => updatePayloadField(field.key, [...listRows, ''])}>＋ ADD ITEM</button><small>{field.help ?? 'Drag items to change their order.'}</small></fieldset>;
+    }
     if (field.kind === 'objectList') {
       const rows = normaliseObjectList(value);
       const itemFields = field.itemFields ?? [];
-      return <fieldset className="admin-object-list admin-full-field" key={field.key}><legend>{field.label}</legend>{rows.map((row, index) => <div className="admin-object-row" key={`${field.key}-${index}`}><div className="admin-object-row-title"><strong>{field.label} {index + 1}</strong><button type="button" className="admin-remove-row" onClick={() => updatePayloadField(field.key, rows.filter((_, i) => i !== index))}>REMOVE</button></div><div className="admin-object-fields">{itemFields.map((itemField) => <label key={itemField.key}>{itemField.label}{itemField.kind === 'textarea' ? <textarea rows={2} value={String(row[itemField.key] ?? '')} onChange={(e) => updatePayloadField(field.key, rows.map((item, i) => i === index ? { ...item, [itemField.key]: e.target.value } : item))}/> : <input type={itemField.kind === 'url' ? 'url' : 'text'} value={String(row[itemField.key] ?? '')} onChange={(e) => updatePayloadField(field.key, rows.map((item, i) => i === index ? { ...item, [itemField.key]: e.target.value } : item))}/>}</label>)}</div></div>)}<button type="button" className="admin-secondary-button" onClick={() => updatePayloadField(field.key, [...rows, Object.fromEntries(itemFields.map((item) => [item.key, '']))])}>＋ ADD {field.label.replace(/s$/, '').toUpperCase()}</button></fieldset>;
+      return <fieldset className="admin-object-list admin-full-field" key={field.key}><legend>{field.label}</legend>{rows.map((row, index) => <div className={`admin-object-row ${draggedArrayRow?.field === field.key && draggedArrayRow.index === index ? 'is-dragging' : ''}`} key={`${field.key}-${index}`} draggable={rows.length > 1} onDragStart={(event) => { setDraggedArrayRow({ field: field.key, index }); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', String(index)); }} onDragOver={(event) => { if (draggedArrayRow?.field === field.key && draggedArrayRow.index !== index) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; } }} onDrop={(event) => { event.preventDefault(); const from = Number(event.dataTransfer.getData('text/plain')); if (draggedArrayRow?.field === field.key && Number.isInteger(from)) reorderPayloadArray(field.key, from, index); }} onDragEnd={() => setDraggedArrayRow(null)}><div className="admin-object-row-title"><strong><span className="admin-array-drag-handle" title="Drag to reorder" aria-hidden="true">⠿</span> {field.label} {index + 1}</strong><button type="button" className="admin-remove-row" onClick={() => updatePayloadField(field.key, rows.filter((_, i) => i !== index))}>REMOVE</button></div><div className="admin-object-fields">{itemFields.map((itemField) => <label key={itemField.key}>{itemField.label}{itemField.kind === 'textarea' ? <textarea rows={2} value={String(row[itemField.key] ?? '')} onChange={(e) => updatePayloadField(field.key, rows.map((item, i) => i === index ? { ...item, [itemField.key]: e.target.value } : item))}/> : <input type={itemField.kind === 'url' ? 'url' : 'text'} value={String(row[itemField.key] ?? '')} onChange={(e) => updatePayloadField(field.key, rows.map((item, i) => i === index ? { ...item, [itemField.key]: e.target.value } : item))}/>}</label>)}</div></div>)}<button type="button" className="admin-secondary-button" onClick={() => updatePayloadField(field.key, [...rows, Object.fromEntries(itemFields.map((item) => [item.key, '']))])}>＋ ADD {field.label.replace(/s$/, '').toUpperCase()}</button></fieldset>;
     }
     if (field.kind === 'visibility') {
       const visibility = value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
@@ -247,10 +325,11 @@ export default function AdminApp() {
   };
 
   const startNew = () => {
-    setActiveView(contentType);
+    const nextType = activeView === 'dashboard' ? contentType : activeView;
+    setActiveView(nextType);
     setSelectedId('');
-    setContentType('project'); setSlug(''); setTitle(''); setSortOrder('0');
-    setPayloadText(safeJson(EMPTY_PAYLOADS.project));
+    setContentType(nextType); setSlug(''); setTitle(''); setSortOrder('0');
+    setPayloadText(safeJson(EMPTY_PAYLOADS[nextType]));
     setMessage('New item — save a draft to create it.');
     setError('');
   };
@@ -454,21 +533,34 @@ export default function AdminApp() {
     <div className="admin-workspace">
       <aside className="admin-rail">
         <div className="admin-rail-label">WORKSPACE</div>
-        <button className={`admin-rail-link ${activeView === 'library' ? 'active' : ''}`} onClick={() => { setActiveView('library'); setSelectedId(''); setMessage(''); setError(''); }}><span>01</span> Content library</button>
+        <button className={`admin-rail-link ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => { setActiveView('dashboard'); setSelectedId(''); setMessage(''); setError(''); }}><span>01</span> Dashboard</button>
         <div className="admin-rail-label admin-rail-label-spaced">CONTENT TYPE</div>
         {TYPES.map((type) => <button key={type.value} className={`admin-type-link ${activeView === type.value ? 'active' : ''}`} onClick={() => { setActiveView(type.value); setContentType(type.value); setSelectedId(''); setTitle(''); setSlug(''); setSortOrder('0'); setPayloadText(safeJson(EMPTY_PAYLOADS[type.value])); setUploadPath(''); setMessage(''); setError(''); }}><span className="admin-type-dot"/>{type.label}<small>{items.filter((item) => item.content_type === type.value).length.toString().padStart(2,'0')}</small></button>)}
         <div className="admin-rail-bottom"><span className="admin-rail-label">SESSION</span><p>Signed in as<br/><strong>{email}</strong></p><span className="admin-version">NETFOLIO / CMS 1.0</span></div>
       </aside>
       <section className="admin-main-panel">
-        <div className="admin-page-heading"><div><span className="admin-kicker">PORTFOLIO CMS / {activeView === 'library' ? 'CONTENT LIBRARY' : activeTypeLabel.toUpperCase()}</span><h1>{activeView === 'library' ? <>Content <em>library.</em></> : <>{activeTypeLabel} <em>studio.</em></>}</h1><p>{activeView === 'library' ? 'Browse everything in your workspace. Choose a content type to edit it.' : (TYPES.find((type) => type.value === activeType)?.description ?? 'Manage this content type.') + ' Save privately. Publish only when ready.'}</p></div><div className="admin-heading-actions">{activeView === 'library' && <button className="admin-text-button" onClick={() => void importBaselineAsDrafts()} disabled={importBusy}>{importBusy ? 'IMPORTING BASELINE…' : 'IMPORT CURRENT SITE AS DRAFTS'}</button>}{activeView !== 'library' && <button className="admin-primary-button admin-new-button" onClick={startNew}>＋ NEW {activeTypeLabel.toUpperCase()}</button>}{activeView === 'library' && <button className="admin-primary-button admin-new-button" onClick={() => { setContentType('project'); setActiveView('project'); setSelectedId(''); setTitle(''); setSlug(''); setSortOrder('0'); setPayloadText(safeJson(EMPTY_PAYLOADS.project)); }}>＋ NEW ENTRY</button>}</div></div>
-        {activeView === 'library' && <div className="admin-library-summary"><span><strong>{items.length.toString().padStart(2,'0')}</strong> TOTAL ENTRIES</span><span><strong>{Object.keys(drafts).length.toString().padStart(2,'0')}</strong> WITH DRAFTS</span><span><strong>{Object.keys(published).length.toString().padStart(2,'0')}</strong> PUBLISHED</span></div>}
-        <div className={`admin-editor-grid ${activeView === 'library' ? 'admin-library-only' : 'admin-content-workspace'}`}>
-          <section className="admin-library-card">
-            <div className="admin-card-heading"><div><span className="admin-kicker">{activeView === 'library' ? 'ALL CONTENT' : activeTypeLabel.toUpperCase() + ' LIBRARY'}</span><h2>{activeView === 'library' ? 'Your entries' : activeTypeLabel + ' entries'}</h2></div><span className="admin-count">{visibleItems.length} ITEMS</span></div>
-            {visibleItems.length === 0 ? <div className="admin-empty-state"><span className="admin-empty-glyph">✳</span><h3>{activeView === 'library' ? 'A blank page.' : 'Nothing here yet.'}</h3><p>{activeView === 'library' ? 'Import your current portfolio as drafts, or choose a content type to create your first entry.' : `Create your first ${activeTypeLabel.toLowerCase()} entry. It will stay private until you publish it.`}</p>{activeView !== 'library' && <button className="admin-secondary-button" onClick={startNew}>Create {activeTypeLabel.toLowerCase()} ↗</button>}</div> : <div className="admin-item-list">{visibleItems.map((item) => <button key={item.id} className={`admin-item-row ${selectedId === item.id ? 'selected' : ''}`} onClick={() => { setSelectedId(item.id); setContentType(item.content_type); setError(''); setMessage(''); }}><span className="admin-item-type">{TYPES.find((type) => type.value === item.content_type)?.label.slice(0,1) ?? 'C'}</span><span className="admin-item-copy"><strong>{item.admin_title}</strong><small>{item.content_type} / {item.slug}</small><span className="admin-item-status"><i className={published[item.id] ? 'published' : ''}/>{published[item.id] ? 'PUBLISHED' : 'UNPUBLISHED'}{drafts[item.id] ? ' · DRAFT SAVED' : ''}</span></span><span className="admin-item-arrow">↗</span></button>)}</div>}
-            <div className="admin-library-footer"><span>RLS PROTECTED</span><span>↗ SUPABASE</span></div>
+        {activeView === 'dashboard' ? <>
+          <div className="admin-page-heading"><div><span className="admin-kicker">NETFOLIO CMS / OVERVIEW</span><h1>Welcome <em>back.</em></h1><p>Manage your portfolio content, review drafts, and publish updates when you are ready.</p></div><div className="admin-heading-actions"><button className="admin-text-button" onClick={() => void importBaselineAsDrafts()} disabled={importBusy}>{importBusy ? 'IMPORTING…' : 'IMPORT SITE CONTENT'}</button><button className="admin-primary-button admin-new-button" onClick={() => { setContentType('project'); setActiveView('project'); setSelectedId(''); setTitle(''); setSlug(''); setSortOrder('0'); setPayloadText(safeJson(EMPTY_PAYLOADS.project)); }}>＋ NEW CONTENT</button></div></div>
+          <div className="admin-dashboard-stats">
+            <article><span className="admin-kicker">TOTAL CONTENT</span><strong>{items.length.toString().padStart(2,'0')}</strong><small>Across all content types</small></article>
+            <article><span className="admin-kicker">DRAFTS</span><strong>{Object.keys(drafts).length.toString().padStart(2,'0')}</strong><small>Saved privately</small></article>
+            <article><span className="admin-kicker">PUBLISHED</span><strong>{Object.keys(published).length.toString().padStart(2,'0')}</strong><small>Visible on your site</small></article>
+            <article><span className="admin-kicker">CONTENT TYPES</span><strong>{TYPES.length.toString().padStart(2,'0')}</strong><small>Manageable collections</small></article>
+          </div>
+          <section className="admin-dashboard-section"><div className="admin-card-heading"><div><span className="admin-kicker">WORKSPACE</span><h2>Manage content</h2></div></div><div className="admin-dashboard-types">{TYPES.map((type, index) => <button key={type.value} className="admin-dashboard-type" onClick={() => { setActiveView(type.value); setContentType(type.value); setSelectedId(''); setTitle(''); setSlug(''); setSortOrder('0'); setPayloadText(safeJson(EMPTY_PAYLOADS[type.value])); setUploadPath(''); setMessage(''); setError(''); }}><span className="admin-dashboard-type-index">0{index + 1}</span><span><strong>{type.label}</strong><small>{type.description}</small></span><b>{items.filter((item) => item.content_type === type.value).length.toString().padStart(2,'0')}</b><i>↗</i></button>)}</div></section>
+          <section className="admin-dashboard-section admin-dashboard-recent"><div className="admin-card-heading"><div><span className="admin-kicker">RECENTLY UPDATED</span><h2>Latest content</h2></div><span className="admin-count">{items.length} ITEMS</span></div>
+            {items.length === 0 ? <div className="admin-empty-state"><h3>Your workspace is ready.</h3><p>Import the current site content as drafts or create your first entry to get started.</p></div> : <div className="admin-item-list">{[...items].sort((a,b) => b.updated_at.localeCompare(a.updated_at)).slice(0,5).map((item) => <button key={item.id} className="admin-item-row" onClick={() => { setActiveView(item.content_type); setSelectedId(item.id); setContentType(item.content_type); setError(''); setMessage(''); }}><span className="admin-item-type">{TYPES.find((type) => type.value === item.content_type)?.label.slice(0,1) ?? 'C'}</span><span className="admin-item-copy"><strong>{item.admin_title}</strong><small>{item.content_type} / {item.slug}</small><span className="admin-item-status"><i className={published[item.id] ? 'published' : ''}/>{published[item.id] ? 'PUBLISHED' : 'UNPUBLISHED'}{drafts[item.id] ? ' · DRAFT SAVED' : ''}{activeView === 'project' && Boolean((drafts[item.id]?.payload ?? published[item.id]?.payload ?? {}).featured) ? ' · FEATURED' : ''}</span></span><span className="admin-item-arrow">↗</span></button>)}</div>}
           </section>
-          {activeView !== 'library' && <section className="admin-editor-card">
+        </> : <>
+          <div className="admin-page-heading"><div><span className="admin-kicker">NETFOLIO CMS / {activeTypeLabel.toUpperCase()}</span><h1>{activeTypeLabel} <em>management.</em></h1><p>{(TYPES.find((type) => type.value === activeType)?.description ?? 'Manage this content type.') + ' Save privately. Publish only when ready.'}</p></div><div className="admin-heading-actions"><button className="admin-primary-button admin-new-button" onClick={startNew}>＋ NEW {activeTypeLabel.toUpperCase()}</button></div></div>
+          <div className="admin-editor-grid admin-content-workspace">
+            <section className="admin-library-card"><div className="admin-card-heading"><div><span className="admin-kicker">{activeTypeLabel.toUpperCase()}</span><h2>{activeTypeLabel} entries</h2></div><span className="admin-count">{(activeView === 'project' ? filteredItems : visibleItems).length} ITEMS</span></div>
+              {activeView !== 'dashboard' && <p className="admin-project-reorder-hint">⠿ Drag entries to reorder this section. Display positions save automatically. Reordering project entries requires clearing search and filters first.</p>}
+              {activeView === 'project' && <div className="admin-project-toolbar"><label className="admin-project-search"><span aria-hidden="true">⌕</span><input value={projectSearch} onChange={(event) => setProjectSearch(event.target.value)} placeholder="Search projects by name or slug" aria-label="Search projects"/></label><label className="admin-project-filter"><span className="sr-only">Filter projects</span><select value={projectFilter} onChange={(event) => setProjectFilter(event.target.value as typeof projectFilter)}><option value="all">All projects</option><option value="draft">Has draft</option><option value="published">Published</option><option value="featured">Featured</option></select></label></div>}
+              {(activeView === 'project' ? filteredItems : visibleItems).length === 0 ? <div className="admin-empty-state"><span className="admin-empty-glyph">✳</span><h3>{activeView === 'project' && projectSearch ? 'No matching projects.' : 'Nothing here yet.'}</h3><p>{activeView === 'project' && (projectSearch || projectFilter !== 'all') ? 'Try a different search or filter.' : `Create your first ${activeTypeLabel.toLowerCase()} entry. It will stay private until you publish it.`}</p>{!(activeView === 'project' && (projectSearch || projectFilter !== 'all')) && <button className="admin-secondary-button" onClick={startNew}>Create {activeTypeLabel.toLowerCase()} ↗</button>}</div> : <div className={`admin-item-list ${activeView !== 'dashboard' ? 'admin-project-sort-list' : ''}`}>{(activeView === 'project' ? [...filteredItems].sort((a, b) => a.sort_order - b.sort_order || a.admin_title.localeCompare(b.admin_title)) : visibleItems).map((item) => <button key={item.id} type="button" draggable={activeView !== 'dashboard' && !(activeView === 'project' && (projectSearch.trim() || projectFilter !== 'all')) && !reorderBusy} onDragStart={(event) => { if (activeView === 'dashboard' || (activeView === 'project' && (projectSearch.trim() || projectFilter !== 'all')) || reorderBusy) { event.preventDefault(); return; } setDraggedProjectId(item.id); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', item.id); }} onDragOver={(event) => { if (draggedProjectId && draggedProjectId !== item.id) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; } }} onDrop={(event) => { event.preventDefault(); const sourceId = event.dataTransfer.getData('text/plain') || draggedProjectId; if (sourceId) void reorderEntries(sourceId, item.id); }} onDragEnd={() => setDraggedProjectId(null)} className={`admin-item-row ${selectedId === item.id ? 'selected' : ''} ${draggedProjectId === item.id ? 'is-dragging' : ''}`} onClick={() => { setSelectedId(item.id); setContentType(item.content_type); setError(''); setMessage(''); }}><span className="admin-item-type">{TYPES.find((type) => type.value === item.content_type)?.label.slice(0,1) ?? 'C'}</span><span className="admin-item-copy"><strong>{item.admin_title}</strong><small>{item.content_type} / {item.slug}</small><span className="admin-item-status"><i className={published[item.id] ? 'published' : ''}/>{published[item.id] ? 'PUBLISHED' : 'UNPUBLISHED'}{drafts[item.id] ? ' · DRAFT SAVED' : ''}{activeView === 'project' && Boolean((drafts[item.id]?.payload ?? published[item.id]?.payload ?? {}).featured) ? ' · FEATURED' : ''}</span></span>{activeView !== 'dashboard' && <span className="admin-project-position" aria-label={`Display position ${item.sort_order}`} title="Drag to reorder"><span aria-hidden="true">⠿</span><b>{String(item.sort_order).padStart(2, '0')}</b></span>}<span className="admin-item-arrow">↗</span></button>)}</div>}
+              <div className="admin-library-footer"><span>RLS PROTECTED</span><span>↗ SUPABASE</span></div>
+            </section>
+          <section className="admin-editor-card">
             <div className="admin-card-heading"><div><span className="admin-kicker">{selected ? `EDIT / ${selected.content_type.toUpperCase()}` : 'NEW ' + activeTypeLabel.toUpperCase()}</span><h2>{selected ? 'Edit entry' : 'Create an entry'}</h2></div>{selected && <span className={`admin-state-pill ${selectedPublished ? 'published' : ''}`}>{selectedPublished ? 'LIVE' : 'DRAFT MODE'}</span>}</div>
             <div className="admin-form-grid">
               <label>Content type<select value={contentType} onChange={(e) => { const next = e.target.value as ContentType; setContentType(next); if (!selected) setPayloadText(safeJson(EMPTY_PAYLOADS[next])); }} disabled={Boolean(selected)}>{TYPES.filter((type) => type.value === activeView).map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select></label>
@@ -484,8 +576,9 @@ export default function AdminApp() {
             {error && <p className="admin-alert admin-alert-error" role="alert">{error}</p>}
             <div className="admin-editor-actions"><button className="admin-secondary-button" onClick={() => setPreviewOpen(true)}>PREVIEW JSON ↗</button><button className="admin-primary-button" onClick={() => void saveDraft()} disabled={busy}>{busy ? 'SAVING…' : 'SAVE DRAFT'} <span>↗</span></button></div>
             {selected && <div className="admin-publish-panel"><div><span className="admin-kicker">FINAL STEP</span><h3>Ready to go public?</h3><p>Publishing copies the saved draft to the public content table and records an immutable revision.</p></div><label>Revision note<input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. First portfolio release"/></label><button className="admin-publish-button" onClick={() => void publishDraft()} disabled={busy || !selectedDraft || !draftMatchesEditor}>{busy ? 'PROCESSING…' : !selectedDraft || !draftMatchesEditor ? 'SAVE CHANGES BEFORE PUBLISHING' : 'PUBLISH SAVED DRAFT ↗'}</button></div>}
-          </section>}
-        </div>
+          </section>
+          </div>
+        </>}
         <footer className="admin-footer"><span>NETFOLIO CMS / BUILT FOR INTENTIONAL EDITING</span><span>PUBLIC SITE IS NOT AUTO-PUBLISHED</span></footer>
       </section>
     </div>
@@ -496,3 +589,4 @@ export default function AdminApp() {
 function Brand() {
   return <a href="/" className="admin-brand" aria-label="Return to Arjun Ajithan portfolio"><img className="admin-brand-mark" src="/logo.svg" alt="" /><span><strong>ARJUN AJITHAN</strong><small>NETFOLIO / PRIVATE CMS</small></span></a>;
 }
+
