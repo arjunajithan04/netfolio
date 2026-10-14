@@ -89,7 +89,7 @@ export default function FinalCTA({ onReplay }: { onReplay: () => void }) {
           className="finale-title relative font-display leading-[0.84] text-bone"
           style={{ fontSize: 'clamp(3rem, 10.7vw, 10.5rem)', letterSpacing: spacing, filter: blur, opacity }}
         >
-          <span>TO BE </span><span className="finale-title-accent">CONTINUED<span className="finale-ellipsis">…</span></span>
+          <span>TO BE </span><span className="finale-title-accent">CONTINUED<span className="finale-ellipsis"></span></span>
         </motion.h2>
 
         <motion.div
