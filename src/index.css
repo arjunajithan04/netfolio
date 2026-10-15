@@ -2149,6 +2149,7 @@ a:focus-visible {
 .netfolio-command-dialog::before { content:""; position:absolute; inset:0 0 auto; height:2px; background:linear-gradient(90deg,transparent,#ff3157 20%,#ff3157 80%,transparent); }
 .netfolio-command-topline { display:flex; align-items:center; gap:10px; color:#a49ba5; font-size:9px; font-weight:800; letter-spacing:.2em; }
 .netfolio-command-mark { display:grid; place-items:center; width:29px; height:29px; border:1px solid rgba(255,61,90,.65); color:#f7edf0; font:700 11px/1 var(--font-sans); letter-spacing:-.08em; }
+.admin-brand-mark img, .netfolio-command-mark img { display:block; width:100%; height:100%; object-fit:contain; }
 .netfolio-command-topline i { color:#ff3d5a; font-style:normal; }
 .netfolio-command-topline > button { margin-left:auto; border:1px solid rgba(255,255,255,.13); width:29px; height:29px; color:#c9c0c9; font-size:20px; line-height:1; transition:background .18s,color .18s,border-color .18s; }
 .netfolio-command-topline > button:hover { color:white; border-color:rgba(255,61,90,.65); background:rgba(255,61,90,.12); }

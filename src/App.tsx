@@ -236,7 +236,7 @@ function Series() {
               transition={{ duration: .24, ease: EASE }}
               onMouseDown={(event) => event.stopPropagation()}
             >
-              <div className="netfolio-command-topline"><span className="netfolio-command-mark">AB</span><span>NETFOLIO <i>·</i> CONSOLE</span><button type="button" aria-label="Close command console" onClick={() => setCommandOpen(false)}>×</button></div>
+              <div className="netfolio-command-topline"><span className="netfolio-command-mark"><img src="/logo.svg" alt="" /></span><span>NETFOLIO <i>·</i> CONSOLE</span><button type="button" aria-label="Close command console" onClick={() => setCommandOpen(false)}>×</button></div>
               <p className="netfolio-command-kicker">PRIVATE CONSOLE</p>
               <h2 id="netfolio-command-title">Command<span className="netfolio-command-title-dot">.</span></h2>
               <form onSubmit={submitHiddenCommand}>
