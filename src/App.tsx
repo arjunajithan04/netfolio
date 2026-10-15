@@ -101,12 +101,52 @@ function Series() {
 
   const submitHiddenCommand = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (command.trim().toLowerCase() === 'admin') {
+    const normalized = command.trim().toLowerCase().replace(/\s+/g, ' ');
+    setCommandFeedback('');
+
+    // Deliberately keep this registry out of the UI: the console reveals no hints.
+    // These are navigation shortcuts only; /admin still uses the existing auth flow.
+    const sectionCommands: Record<string, string> = {
+      home: 'top', intro: 'top', opening: 'top',
+      about: 'about', profile: 'about',
+      journey: 'journey', experience: 'journey', timeline: 'journey',
+      originals: 'originals', projects: 'originals', work: 'originals', portfolio: 'originals',
+      picks: 'picks', featured: 'picks', recommendations: 'picks',
+      skills: 'skills', stack: 'skills', technologies: 'skills',
+      moments: 'moments', credentials: 'moments', certificates: 'moments', achievements: 'moments',
+      story: 'story', resume: 'story', cv: 'story',
+      contact: 'contact', connect: 'contact',
+    };
+
+    if (normalized === 'admin') {
       setCommandOpen(false);
       window.location.assign('/admin');
       return;
     }
-    setCommandFeedback('Command not recognized. Try again.');
+    if (normalized === 'replay' || normalized === 'replay intro') {
+      setCommandOpen(false);
+      setStage('opening');
+      return;
+    }
+    if (normalized === 'resume' || normalized === 'cv') {
+      setCommandOpen(false);
+      setResumeOpen(true);
+      return;
+    }
+
+    const destination = sectionCommands[normalized];
+    if (destination) {
+      setCommandOpen(false);
+      if (stage !== 'home') setStage('home');
+      // Wait for the home scene to mount when the command is entered during intro/profile selection.
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+        const target = document.getElementById(destination);
+        if (target) scrollTo(target, { offset: -72 });
+      }));
+      return;
+    }
+
+    setCommandFeedback('Command not recognized.');
     setCommand('');
     commandInputRef.current?.focus();
   };
@@ -197,14 +237,11 @@ function Series() {
               onMouseDown={(event) => event.stopPropagation()}
             >
               <div className="netfolio-command-topline"><span className="netfolio-command-mark">AB</span><span>NETFOLIO <i>·</i> CONSOLE</span><button type="button" aria-label="Close command console" onClick={() => setCommandOpen(false)}>×</button></div>
-              <p className="netfolio-command-kicker">HIDDEN INTERFACE / 01</p>
-              <h2 id="netfolio-command-title">Enter <em>command.</em></h2>
-              <p className="netfolio-command-description">A private shortcut for the curious. Proceed with intent.</p>
+              <p className="netfolio-command-kicker">PRIVATE CONSOLE</p>
+              <h2 id="netfolio-command-title">Command<span className="netfolio-command-title-dot">.</span></h2>
               <form onSubmit={submitHiddenCommand}>
-                <label className="netfolio-command-label" htmlFor="netfolio-command-input">COMMAND LINE</label>
-                <div className="netfolio-command-input-wrap"><span aria-hidden="true">›</span><input ref={commandInputRef} id="netfolio-command-input" autoComplete="off" spellCheck={false} value={command} onChange={(event) => { setCommand(event.target.value); setCommandFeedback(''); }} placeholder="Type a command…" /></div>
-                <div className="netfolio-command-feedback" role="status" aria-live="polite">{commandFeedback || 'Press Enter to execute'}</div>
-                <div className="netfolio-command-footer"><span><kbd>ENTER</kbd> EXECUTE</span><span><kbd>ESC</kbd> CLOSE</span><button type="submit">RUN COMMAND ↗</button></div>
+                <div className="netfolio-command-input-wrap"><span aria-hidden="true">›</span><input ref={commandInputRef} id="netfolio-command-input" aria-label="Enter command" autoComplete="off" spellCheck={false} value={command} onChange={(event) => { setCommand(event.target.value); setCommandFeedback(''); }} placeholder="_" /></div>
+                <div className="netfolio-command-feedback" role="status" aria-live="polite">{commandFeedback}</div>
               </form>
             </motion.section>
           </motion.div>

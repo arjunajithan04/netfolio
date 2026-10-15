@@ -2171,3 +2171,12 @@ a:focus-visible {
 .netfolio-command-footer button:hover { filter:brightness(1.12); }
 @media (max-width:480px) { .netfolio-command-footer { gap:9px; } .netfolio-command-footer button { width:100%; margin:4px 0 0; } }
 @media (prefers-reduced-motion:reduce) { .netfolio-command-topline > button,.netfolio-command-footer button { transition:none; } }
+
+/* Minimal hidden command console: no command hints, only the input. */
+.netfolio-command-dialog { width: min(470px,100%); padding: clamp(22px,3.5vw,30px); }
+.netfolio-command-kicker { margin: 24px 0 8px; }
+.netfolio-command-dialog h2 { margin-bottom: 24px; }
+.netfolio-command-title-dot { color: #ff3d5a; }
+.netfolio-command-input-wrap { min-height: 58px; }
+.netfolio-command-input-wrap input { font-size: 15px; letter-spacing: .07em; }
+.netfolio-command-feedback { min-height: 20px; padding-top: 8px; }
