@@ -213,10 +213,10 @@ export const introSlides: IntroSlide[] = [
 export type ProfileId = 'arjun' | 'recruiter' | 'developer' | 'creative';
 export type SectionId = 'about' | 'journey' | 'originals' | 'picks' | 'skills' | 'moments' | 'story';
 export const viewerProfiles: { id: ProfileId; name: string; blurb: string; color: string; order: SectionId[] }[] = [
-  { id: 'arjun', name: 'Arjun', blurb: 'The full series, in order', color: '#9a8cff', order: ['about', 'journey', 'originals', 'picks', 'skills', 'moments', 'story'] },
-  { id: 'recruiter', name: 'Recruiter', blurb: 'Projects, skills & background first', color: '#4cc9ff', order: ['story', 'moments', 'skills', 'originals', 'about', 'journey', 'picks'] },
-  { id: 'developer', name: 'Developer', blurb: 'Projects and stack first', color: '#9a8cff', order: ['originals', 'skills', 'journey', 'moments', 'about', 'picks', 'story'] },
-  { id: 'creative', name: 'Creative', blurb: 'The story arc and visual work first', color: '#ffb547', order: ['journey', 'picks', 'originals', 'moments', 'about', 'skills', 'story'] },
+  { id: 'arjun', name: 'Arjun', blurb: 'I, Me, Myself', color: '#9a8cff', order: ['about', 'journey', 'originals', 'picks', 'skills', 'moments', 'story'] },
+  { id: 'recruiter', name: 'Recruiter', blurb: 'Why Hire Me', color: '#4cc9ff', order: ['story', 'moments', 'skills', 'originals', 'about', 'journey', 'picks'] },
+  { id: 'developer', name: 'Developer', blurb: 'My Work', color: '#9a8cff', order: ['originals', 'skills', 'journey', 'moments', 'about', 'picks', 'story'] },
+  { id: 'creative', name: 'Creative', blurb: 'My Story Arc', color: '#ffb547', order: ['journey', 'picks', 'originals', 'moments', 'about', 'skills', 'story'] },
 ];
 export const sectionMeta: Record<SectionId, { nav: string; card: string; meta: string; palette: Palette }> = {
   about: { nav: 'About', card: 'About Me', meta: 'The Pilot • Education & interests', palette: violet },

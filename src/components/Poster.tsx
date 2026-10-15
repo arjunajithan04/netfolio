@@ -57,7 +57,7 @@ export function SeriesMark({ className = '' }: { className?: string }) {
   return (
     <span className={`inline-flex items-center gap-1.5 ${className}`}>
       <img src="/logo.svg" alt="A" className="h-[1.7em] w-[1.7em] rounded-md object-contain" />
-      <span className="font-sans text-[0.62em] font-bold tracking-[0.36em] text-mist">SERIES</span>
+      <span className="font-sans text-[0.62em] font-bold tracking-[0.36em] text-mist">NETFOLIO</span>
     </span>
   );
 }

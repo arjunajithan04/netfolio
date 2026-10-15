@@ -74,7 +74,7 @@ export default function ProfileSelector({ onPick }: { onPick: (id: ProfileId) =>
         ))}
       </motion.ul>
       <p className="relative mt-12 max-w-md text-center text-xs leading-relaxed text-smoke">
-        Every profile watches the same true story of {profile.displayName} — it only changes what plays first.
+        Every profile watches the same story of {profile.displayName} . Only the user changes.
       </p>
     </motion.div>
   );
