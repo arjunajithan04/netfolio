@@ -21,7 +21,7 @@ export const profile = {
   location: 'Bengaluru, India',
   email: 'arjunajithan04@gmail.com',
   links: { github: 'https://github.com/arjunajithan04', linkedin: 'https://linkedin.com/in/arjunajithan', instagram: 'https://www.instagram.com/arjunajithan/', email: 'mailto:arjunajithan04@gmail.com' },
-  resumePdf: '/Arjun_Resume_Final.pdf',
+  resumePdf: '/Arjun_Resume_Updated.pdf',
   portrait: {
     src: '/assets/portrait-720.webp',
     srcSet: '/assets/portrait-420.webp 420w, /assets/portrait-720.webp 720w, /assets/portrait-1100.webp 1100w',
